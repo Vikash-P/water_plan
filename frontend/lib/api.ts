@@ -7,8 +7,13 @@ export type Product = {
 export type Zone = { id: string; name: string; areas: string[]; pincodes: string[]; status: string };
 export type Catalog = { deposit_per_jar: number; products: Product[]; zones: Zone[] };
 
-// Server-only: absolute URL needed. Browser calls go through the /api rewrite.
-const API = process.env.API_URL ?? "http://127.0.0.1:8000";
+// Server-only: absolute URL needed. On Vercel, BACKEND_URL is injected by the service binding in vercel.json
+// (runtime only, not during the build, where the FALLBACK below is used). Locally, API_URL or the default port.
+// Browser calls use same-origin /api/*: Vercel routes them to the backend service; `next dev` proxies via next.config.ts.
+function backendBase(): string {
+  const base = process.env.BACKEND_URL ?? process.env.API_URL ?? "http://127.0.0.1:8000";
+  return base.endsWith("/") ? base : base + "/";
+}
 
 // Used if the API is unreachable (e.g. at build time) so the site never breaks.
 const FALLBACK: Catalog = {
@@ -30,7 +35,7 @@ export async function getCatalog(): Promise<Catalog> {
   "use cache";
   cacheLife("minutes");
   try {
-    const res = await fetch(`${API}/api/catalog`);
+    const res = await fetch(new URL("api/catalog", backendBase()));
     if (!res.ok) return FALLBACK;
     return await res.json();
   } catch {
