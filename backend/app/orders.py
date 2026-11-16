@@ -7,7 +7,7 @@ from fastapi import APIRouter, Header, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
 
 from . import catalog
-from .db import connect
+from .db import connect, ts
 from .validators import PIN_RE, normalize_phone
 
 router = APIRouter(prefix="/api")
@@ -89,8 +89,8 @@ def _public(row) -> dict:
         "deposit": row["deposit"],
         "total_due": row["amount"] + row["deposit"],
         "slot": SLOTS.get(row["slot"], row["slot"]),
-        "created_at": row["created_at"],
-        "updated_at": row["updated_at"],
+        "created_at": ts(row["created_at"]),
+        "updated_at": ts(row["updated_at"]),
     }
 
 
@@ -114,18 +114,16 @@ def create_order(order: OrderIn):
     with connect() as conn:
         for _ in range(5):  # retry on the (very unlikely) code collision
             code = new_code()
-            try:
-                conn.execute(
-                    "INSERT INTO orders (code, name, phone, pincode, zone, society, tower, flat, product_id,"
-                    " jars_now, has_jars, amount, deposit, slot, notes) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (code, order.name.strip(), order.phone, order.pincode, zone["name"], order.society.strip(),
-                     (order.tower or "").strip() or None, order.flat.strip(), product["id"], order.jars_now,
-                     int(order.has_jars), amount, deposit, order.slot, order.notes),
-                )
+            inserted = conn.execute(
+                "INSERT INTO orders (code, name, phone, pincode, zone, society, tower, flat, product_id,"
+                " jars_now, has_jars, amount, deposit, slot, notes) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                " ON CONFLICT (code) DO NOTHING RETURNING id",
+                (code, order.name.strip(), order.phone, order.pincode, zone["name"], order.society.strip(),
+                 (order.tower or "").strip() or None, order.flat.strip(), product["id"], order.jars_now,
+                 int(order.has_jars), amount, deposit, order.slot, order.notes),
+            ).fetchone()
+            if inserted:
                 break
-            except Exception as exc:  # sqlite3.IntegrityError on UNIQUE(code)
-                if "UNIQUE" not in str(exc):
-                    raise
         else:
             raise HTTPException(500, "Could not create order, please retry")
         row = conn.execute("SELECT * FROM orders WHERE code = ?", (code,)).fetchone()
@@ -154,7 +152,7 @@ def cancel_order(code: str, body: PhoneIn):
             raise HTTPException(404, "Order not found")
         if "cancelled" not in TRANSITIONS[row["status"]] or row["status"] == "out_for_delivery":
             raise HTTPException(409, "This order can no longer be cancelled. Please call support.")
-        conn.execute("UPDATE orders SET status='cancelled', updated_at=datetime('now') WHERE id=?", (row["id"],))
+        conn.execute("UPDATE orders SET status='cancelled', updated_at=CURRENT_TIMESTAMP WHERE id=?", (row["id"],))
         row = conn.execute("SELECT * FROM orders WHERE id = ?", (row["id"],)).fetchone()
     return _public(row)
 
@@ -199,6 +197,6 @@ def admin_set_status(order_id: int, body: StatusIn, x_admin_key: Optional[str] =
             raise HTTPException(404, "Order not found")
         if body.status not in TRANSITIONS[row["status"]]:
             raise HTTPException(409, f"Can't move from {row['status']} to {body.status}")
-        conn.execute("UPDATE orders SET status=?, updated_at=datetime('now') WHERE id=?", (body.status, order_id))
+        conn.execute("UPDATE orders SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?", (body.status, order_id))
         row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
     return _admin_row(row)

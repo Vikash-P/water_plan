@@ -18,7 +18,10 @@ cd frontend && npm install && npm run dev
 
 Orders: customers request jars at `/order` (no payment yet — ops confirm on WhatsApp and send a UPI link). Ops manage them at `/admin`, which needs `JALDROP_ADMIN_KEY` set when starting the API, e.g. `JALDROP_ADMIN_KEY=choose-a-secret .venv/bin/uvicorn app.main:app --port 8000`. Without it, admin endpoints are disabled.
 
-Set `API_URL` (default `http://127.0.0.1:8000`) if the API runs elsewhere. Tests: `cd backend && .venv/bin/pytest`.
+Set `API_URL` (default `http://127.0.0.1:8000`) if the API runs elsewhere. Tests: `cd backend && .venv/bin/pip install -r requirements-dev.txt && .venv/bin/pytest`. Set `DATABASE_URL` to a Postgres URI to use Postgres instead of the local SQLite file.
+
+## Deploy
+See [DEPLOY.md](DEPLOY.md) — Vercel for the site and API, Supabase for the database.
 
 ## Design
 Follows Apple-style design principles: system font, size-specific tracking, instant press feedback, translucent header, and reduced-motion / transparency / contrast support.

@@ -77,8 +77,9 @@ def create_lead(lead: LeadIn):
     with connect() as conn:
         cur = conn.execute(
             "INSERT INTO leads (kind, name, phone, email, pincode, business_name, jars_per_month, notes)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
             (lead.kind, lead.name.strip(), lead.phone, lead.email, lead.pincode,
              lead.business_name, lead.jars_per_month, lead.notes),
         )
-    return {"id": cur.lastrowid, "ok": True}
+        lead_id = cur.fetchone()["id"]
+    return {"id": lead_id, "ok": True}
