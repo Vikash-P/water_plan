@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const links = [
   { href: "/#how", label: "How it works" },
+  { href: "/track", label: "Track order" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/b2b", label: "For business" },
   { href: "/partner", label: "Become a partner" },
@@ -18,8 +19,8 @@ export default function Header() {
             <Link key={l.href} href={l.href} className="text-muted hover:text-brand">{l.label}</Link>
           ))}
         </nav>
-        <Link href="/#start" className="btn btn-primary !px-4 !py-2 text-sm">
-          Get started
+        <Link href="/order" className="btn btn-primary !px-4 !py-2 text-sm">
+          Order now
         </Link>
       </div>
     </header>

@@ -1,4 +1,3 @@
-import re
 from contextlib import asynccontextmanager
 from typing import Optional
 
@@ -8,6 +7,8 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from . import catalog
 from .db import connect, init_db
+from .orders import router as orders_router
+from .validators import PIN_RE, normalize_phone
 
 
 @asynccontextmanager
@@ -17,15 +18,13 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="JalDrop API", version="0.1.0", lifespan=lifespan)
+app.include_router(orders_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PATCH"],
     allow_headers=["*"],
 )
-
-PHONE_RE = re.compile(r"^[6-9]\d{9}$")
-PIN_RE = re.compile(r"^\d{6}$")
 
 
 class LeadIn(BaseModel):
@@ -41,11 +40,7 @@ class LeadIn(BaseModel):
     @field_validator("phone")
     @classmethod
     def valid_phone(cls, v: str) -> str:
-        v = re.sub(r"[\s-]", "", v)
-        v = re.sub(r"^(\+91|91|0)(?=\d{10}$)", "", v)
-        if not PHONE_RE.match(v):
-            raise ValueError("Enter a valid 10-digit Indian mobile number")
-        return v
+        return normalize_phone(v)
 
     @field_validator("pincode")
     @classmethod

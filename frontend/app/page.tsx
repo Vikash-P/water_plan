@@ -1,3 +1,4 @@
+import Link from "next/link";
 import PincodeChecker from "@/components/PincodeChecker";
 import LeadForm from "@/components/LeadForm";
 import { getCatalog } from "@/lib/api";
@@ -26,7 +27,11 @@ export default async function Home() {
               20L drinking water at your door in <span className="text-brand">2 hours</span>.
             </h1>
             <p className="lead mt-4">ISI-certified, prepaid, one-tap refills. Built for Mumbai flats — no more calling around.</p>
-            <div className="mt-8 max-w-md"><PincodeChecker /></div>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link href="/order" className="btn btn-primary">Order water now</Link>
+              <Link href="/track" className="btn border border-line">Track an order</Link>
+            </div>
+            <div className="mt-6 max-w-md"><p className="small mb-2 text-muted">Check if we deliver to you</p><PincodeChecker /></div>
           </div>
           <div className="card p-6 shadow-sm">
             <h2 className="text-xl font-semibold">Get your first jar free</h2>

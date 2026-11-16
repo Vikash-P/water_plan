@@ -17,6 +17,29 @@ CREATE TABLE IF NOT EXISTS leads (
     notes TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL UNIQUE,         -- public order code, e.g. JD7K2M9Q
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    pincode TEXT NOT NULL,
+    zone TEXT NOT NULL,
+    society TEXT NOT NULL,
+    tower TEXT,
+    flat TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    jars_now INTEGER NOT NULL,         -- jars delivered with this request
+    has_jars INTEGER NOT NULL,         -- 1 if customer already holds JalDrop jars
+    amount INTEGER NOT NULL,           -- rupees for the product(s)
+    deposit INTEGER NOT NULL,          -- refundable deposit due (rupees)
+    slot TEXT NOT NULL,
+    notes TEXT,
+    status TEXT NOT NULL DEFAULT 'requested',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_orders_phone ON orders(phone);
 """
 
 
