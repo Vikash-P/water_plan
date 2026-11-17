@@ -14,6 +14,7 @@ from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Request, 
 from pydantic import BaseModel, Field, field_validator
 
 from .auth import current_phone, start_session
+from .catalog import DEPOSIT_PER_JAR as DEFAULT_DEPOSIT
 from .db import connect
 from .orders import SLOTS, require_admin
 from .validators import PIN_RE, normalize_phone
@@ -157,6 +158,7 @@ def _listing(r, with_partner=False) -> dict:
          "pincodes": [x for x in r["pincodes"].split(",") if x], "status": r["status"], "review_note": r["review_note"]}
     if with_partner:
         d["partner"] = r["business_name"]
+        d["deposit_per_jar"] = DEFAULT_DEPOSIT if r["deposit_per_jar"] is None else r["deposit_per_jar"]
     return d
 
 
@@ -249,7 +251,7 @@ def partner_move_order(code: str, body: PartnerStatusIn, p: dict = Depends(requi
 def public_listings():
     with connect() as conn:
         rows = conn.execute(
-            "SELECT l.*, p.business_name FROM listings l JOIN partners p ON p.id = l.partner_id"
+            "SELECT l.*, p.business_name, p.deposit_per_jar FROM listings l JOIN partners p ON p.id = l.partner_id"
             " WHERE l.status = 'approved' AND p.status = 'active' ORDER BY l.price, l.id LIMIT 100"
         ).fetchall()
     return {"listings": [_listing(r, True) for r in rows]}
@@ -261,6 +263,7 @@ class PartnerIn(BaseModel):
     phone: str
     business_name: str = Field(min_length=2, max_length=150)
     contact_name: str = Field(min_length=2, max_length=100)
+    deposit_per_jar: Optional[int] = Field(default=None, ge=0, le=5000)
 
     @field_validator("phone")
     @classmethod
@@ -278,7 +281,7 @@ def admin_partner_leads(x_admin_key: Optional[str] = Header(default=None), jd_ad
     require_admin(x_admin_key, jd_admin)
     with connect() as conn:
         rows = conn.execute(
-            "SELECT id, name, phone, business_name, pincode, notes FROM leads WHERE kind = 'partner' ORDER BY id DESC LIMIT 100"
+            "SELECT id, name, phone, business_name, pincode, deposit, notes FROM leads WHERE kind = 'partner' ORDER BY id DESC LIMIT 100"
         ).fetchall()
     return {"leads": [dict(r) for r in rows]}
 
@@ -290,8 +293,8 @@ def admin_add_partner(body: PartnerIn, x_admin_key: Optional[str] = Header(defau
         if conn.execute("SELECT 1 FROM partners WHERE phone = ?", (body.phone,)).fetchone():
             raise HTTPException(409, "A partner with this phone already exists")
         row = conn.execute(
-            "INSERT INTO partners (phone, business_name, contact_name) VALUES (?,?,?) RETURNING id",
-            (body.phone, body.business_name.strip(), body.contact_name.strip()),
+            "INSERT INTO partners (phone, business_name, contact_name, deposit_per_jar) VALUES (?,?,?,?) RETURNING id",
+            (body.phone, body.business_name.strip(), body.contact_name.strip(), body.deposit_per_jar),
         ).fetchone()
     # The partner ID is their phone number; they create their own password on first visit.
     return {"id": row["id"], "ok": True, "partner_id": body.phone}
@@ -318,13 +321,14 @@ def admin_partners(x_admin_key: Optional[str] = Header(default=None), jd_admin: 
         rows = conn.execute("SELECT * FROM partners ORDER BY id DESC").fetchall()
     return {"partners": [{"id": r["id"], "phone": r["phone"], "business_name": r["business_name"],
                           "contact_name": r["contact_name"], "status": r["status"],
+                          "deposit_per_jar": DEFAULT_DEPOSIT if r["deposit_per_jar"] is None else r["deposit_per_jar"],
                           "password_set": bool(r["password_hash"])} for r in rows]}
 
 
 @router.get("/admin/listings")
 def admin_listings(status: Optional[str] = None, x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
     require_admin(x_admin_key, jd_admin)
-    sql, args = "SELECT l.*, p.business_name FROM listings l JOIN partners p ON p.id = l.partner_id", []
+    sql, args = "SELECT l.*, p.business_name, p.deposit_per_jar FROM listings l JOIN partners p ON p.id = l.partner_id", []
     if status:
         sql += " WHERE l.status = ?"
         args.append(status)
@@ -344,6 +348,6 @@ def admin_review(listing_id: int, body: ReviewIn, x_admin_key: Optional[str] = H
         if not row:
             raise HTTPException(404, "Listing not found")
         full = conn.execute(
-            "SELECT l.*, p.business_name FROM listings l JOIN partners p ON p.id = l.partner_id WHERE l.id = ?", (listing_id,)
+            "SELECT l.*, p.business_name, p.deposit_per_jar FROM listings l JOIN partners p ON p.id = l.partner_id WHERE l.id = ?", (listing_id,)
         ).fetchone()
     return _listing(full, True)
