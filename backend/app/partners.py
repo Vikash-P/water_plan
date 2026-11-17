@@ -314,6 +314,21 @@ def admin_reset_partner(partner_id: int, x_admin_key: Optional[str] = Header(def
     return {"ok": True, "partner_id": p["phone"]}
 
 
+class DepositIn(BaseModel):
+    deposit_per_jar: int = Field(ge=0, le=5000)
+
+
+@router.patch("/admin/partners/{partner_id}")
+def admin_set_deposit(partner_id: int, body: DepositIn, x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
+    """Change the refundable deposit a partner charges per jar. Applies to new orders only."""
+    require_admin(x_admin_key, jd_admin)
+    with connect() as conn:
+        row = conn.execute("UPDATE partners SET deposit_per_jar=? WHERE id=? RETURNING id", (body.deposit_per_jar, partner_id)).fetchone()
+        if not row:
+            raise HTTPException(404, "Partner not found")
+    return {"ok": True, "deposit_per_jar": body.deposit_per_jar}
+
+
 @router.get("/admin/partners")
 def admin_partners(x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
     require_admin(x_admin_key, jd_admin)

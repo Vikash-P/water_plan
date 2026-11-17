@@ -46,6 +46,15 @@ export default function AdminPartners({ onExpired }: { onExpired: () => void }) 
     setCreds({ partner_id: data.partner_id, name: p.business_name });
     load();
   }
+  async function setDeposit(p: Partner) {
+    const v = window.prompt(`Refundable deposit per jar for ${p.business_name} (₹)`, String(p.deposit_per_jar));
+    if (v === null) return;
+    const n = Number(v);
+    if (!Number.isInteger(n) || n < 0 || n > 5000) { setError("Enter a whole number between 0 and 5000."); return; }
+    setError("");
+    const res = await fetch(`/api/admin/partners/${p.id}`, { method: "PATCH", headers: h, body: JSON.stringify({ deposit_per_jar: n }) });
+    if (!res.ok) setError(errorMessage(await res.json().catch(() => ({})))); else load();
+  }
   async function review(l: Listing, status: string) {
     const note = status === "rejected" ? window.prompt("Reason for rejecting (shown to the partner)") ?? "" : "";
     const res = await fetch(`/api/admin/listings/${l.id}`, { method: "PATCH", headers: h, body: JSON.stringify({ status, review_note: note }) });
@@ -88,7 +97,7 @@ export default function AdminPartners({ onExpired }: { onExpired: () => void }) 
           {partners.map((p) => (
             <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-line py-2">
               <span>{p.business_name} · {p.phone} · ₹{p.deposit_per_jar} deposit</span>
-              <span className="flex items-center gap-2"><span className="chip">{p.password_set ? "Password set" : "Not set up yet"}</span><button onClick={() => reset(p)} className="underline">Reset password</button></span>
+              <span className="flex items-center gap-2"><span className="chip">{p.password_set ? "Password set" : "Not set up yet"}</span><button onClick={() => setDeposit(p)} className="underline">Edit deposit</button><button onClick={() => reset(p)} className="underline">Reset password</button></span>
             </div>
           ))}
           {partners.length === 0 && <p className="text-muted">No partners yet.</p>}
