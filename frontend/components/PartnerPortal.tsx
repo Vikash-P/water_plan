@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Login } from "@/components/Account";
 import { errorMessage } from "@/lib/orders";
 
 type L = { id: number; name: string; brand: string | null; size_litres: number; price: number; pincodes: string[]; status: string; review_note: string | null };
@@ -40,7 +39,7 @@ export default function PartnerPortal() {
   }
 
   if (state.kind === "loading") return <p className="text-muted" role="status">Loading…</p>;
-  if (state.kind === "out") return <Login onDone={reload} title="Partner login" intro="Log in with the mobile number WaterMart approved for your business. We send a 6-digit code." footer={false} />;
+  if (state.kind === "out") return <PartnerLogin onDone={reload} />;
   if (state.kind === "denied") {
     return (
       <div className="card mx-auto max-w-md p-6">
@@ -180,5 +179,61 @@ function Orders() {
         ))}
       </ul>
     </section>
+  );
+}
+
+function PartnerLogin({ onDone }: { onDone: () => void }) {
+  const [mode, setMode] = useState<"login" | "setup">("login");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const phone = String(f.get("phone")).trim();
+    const password = String(f.get("password"));
+    if (mode === "setup" && password !== f.get("confirm")) { setError("The two passwords don't match."); return; }
+    const body = mode === "login" ? { phone, password } : { phone, setup_code: String(f.get("code")).trim(), password };
+    setBusy(true); setError("");
+    try {
+      const res = await fetch(`/api/partner/auth/${mode}`, { method: "POST", headers: json, body: JSON.stringify(body) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(errorMessage(data)); return; }
+      onDone();
+    } catch { setError("Couldn't reach the server. Please try again."); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <div className="card mx-auto max-w-md p-6">
+      <h1 className="title">{mode === "login" ? "Partner login" : "Create your password"}</h1>
+      <p className="lead mt-2">
+        {mode === "login" ? "Your partner ID is the mobile number WaterMart approved for your business." : "Enter the setup code WaterMart sent you and choose a password. You only do this once."}
+      </p>
+      <form key={mode} onSubmit={submit} className="mt-6 grid gap-3">
+        <label htmlFor="pp-phone" className="small text-muted">Partner ID (mobile number)</label>
+        <input id="pp-phone" name="phone" required inputMode="tel" autoComplete="username" placeholder="10-digit number" className="field" />
+        {mode === "setup" && (
+          <>
+            <label htmlFor="pp-code" className="small text-muted">Setup code</label>
+            <input id="pp-code" name="code" required autoComplete="off" placeholder="8-character code" className="field font-mono uppercase tracking-widest" />
+          </>
+        )}
+        <label htmlFor="pp-pass" className="small text-muted">{mode === "login" ? "Password" : "New password (at least 8 characters)"}</label>
+        <input id="pp-pass" name="password" type="password" required minLength={mode === "setup" ? 8 : 1} autoComplete={mode === "login" ? "current-password" : "new-password"} className="field" />
+        {mode === "setup" && (
+          <>
+            <label htmlFor="pp-confirm" className="small text-muted">Confirm password</label>
+            <input id="pp-confirm" name="confirm" type="password" required minLength={8} autoComplete="new-password" className="field" />
+          </>
+        )}
+        <button disabled={busy} className="btn btn-primary">{busy ? "Please wait…" : mode === "login" ? "Log in" : "Save password and log in"}</button>
+      </form>
+      {error && <p className="mt-3 text-sm text-red-600" role="alert">{error}</p>}
+      <button type="button" onClick={() => { setMode(mode === "login" ? "setup" : "login"); setError(""); }} className="small mt-5 text-brand underline">
+        {mode === "login" ? "First time? Create your password" : "Already have a password? Log in"}
+      </button>
+      {mode === "login" && <p className="small mt-3 text-muted">Forgot your password? Ask WaterMart for a new setup code.</p>}
+    </div>
   );
 }

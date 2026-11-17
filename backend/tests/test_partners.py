@@ -85,3 +85,41 @@ def test_order_from_partner_listing_and_delivery():
         login(c2, "9830066666")
         c2.post("/api/admin/partners", headers=ADMIN, json={"phone": "9830066666", "business_name": "Other Co", "contact_name": "Sam"})
         assert c2.patch(f"/api/partner/orders/{o['code']}", json={"status": "delivered"}).status_code == 404
+
+
+def test_partner_password_flow():
+    ph = "9830077777"
+    with TestClient(app) as c:
+        r = c.post("/api/admin/partners", headers=ADMIN, json={"phone": ph, "business_name": "Clear Springs", "contact_name": "Neha"})
+        assert r.status_code == 201 and r.json()["partner_id"] == ph
+        code = r.json()["setup_code"]
+        # cannot log in before setting a password
+        assert c.post("/api/partner/auth/login", json={"phone": ph, "password": "whatever1"}).status_code == 401
+        # wrong code, short password
+        assert c.post("/api/partner/auth/setup", json={"phone": ph, "setup_code": "WRONG123", "password": "goodpass123"}).status_code == 400
+        assert c.post("/api/partner/auth/setup", json={"phone": ph, "setup_code": code, "password": "short"}).status_code == 422
+        ok = c.post("/api/partner/auth/setup", json={"phone": ph, "setup_code": code.lower(), "password": "goodpass123"})
+        assert ok.status_code == 200
+        assert c.get("/api/partner/me").json()["business_name"] == "Clear Springs"  # setup also logs in
+        # the code is single-use
+        assert c.post("/api/partner/auth/setup", json={"phone": ph, "setup_code": code, "password": "otherpass123"}).status_code == 400
+    with TestClient(app) as c2:
+        assert c2.post("/api/partner/auth/login", json={"phone": ph, "password": "nope-nope"}).status_code == 401
+        assert c2.post("/api/partner/auth/login", json={"phone": ph, "password": "goodpass123"}).status_code == 200
+        assert c2.get("/api/partner/me").status_code == 200
+        # admin reset kills the password and sessions
+        pid = next(x["id"] for x in c2.get("/api/admin/partners", headers=ADMIN).json()["partners"] if x["phone"] == ph)
+        new = c2.post(f"/api/admin/partners/{pid}/reset", headers=ADMIN).json()["setup_code"]
+        assert c2.get("/api/partner/me").status_code == 401
+        assert c2.post("/api/partner/auth/login", json={"phone": ph, "password": "goodpass123"}).status_code == 401
+        assert c2.post("/api/partner/auth/setup", json={"phone": ph, "setup_code": new, "password": "brandnew123"}).status_code == 200
+
+
+def test_partner_lockout_after_five_failures():
+    ph = "9830088888"
+    with TestClient(app) as c:
+        code = c.post("/api/admin/partners", headers=ADMIN, json={"phone": ph, "business_name": "Lock Test", "contact_name": "Ali"}).json()["setup_code"]
+        c.post("/api/partner/auth/setup", json={"phone": ph, "setup_code": code, "password": "rightpass123"})
+        for _ in range(5):
+            assert c.post("/api/partner/auth/login", json={"phone": ph, "password": "wrong-pass"}).status_code == 401
+        assert c.post("/api/partner/auth/login", json={"phone": ph, "password": "rightpass123"}).status_code == 429

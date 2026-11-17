@@ -131,6 +131,20 @@ def verify_otp(body: VerifyBody, request: Request, response: Response):
     return {"ok": True}
 
 
+def start_session(phone: str, request: Request, response: Response) -> None:
+    """Create a login session for an already-verified phone and set the cookie."""
+    now = int(time.time())
+    token = secrets.token_urlsafe(32)
+    with connect() as conn:
+        conn.execute(
+            "INSERT INTO sessions (token_hash, phone, expires_at, created_at) VALUES (?,?,?,?)",
+            (_hash("session", token), phone, now + SESSION_TTL, now),
+        )
+        conn.execute("DELETE FROM sessions WHERE expires_at < ?", (now,))
+    secure = request.headers.get("x-forwarded-proto", request.url.scheme) == "https"
+    response.set_cookie(COOKIE, token, max_age=SESSION_TTL, httponly=True, samesite="lax", secure=secure, path="/")
+
+
 def current_phone(token: Optional[str]) -> Optional[str]:
     if not token:
         return None

@@ -76,7 +76,12 @@ CREATE TABLE IF NOT EXISTS partners (
     business_name TEXT NOT NULL,
     contact_name TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'active',   -- active | suspended
-    created_at {TS}
+    created_at {TS},
+    password_hash TEXT,                 -- PBKDF2-SHA256; NULL until the partner sets one
+    setup_code_hash TEXT,               -- one-time code ops hand over so the partner can set a password
+    setup_expires BIGINT NOT NULL DEFAULT 0,
+    failed_attempts INTEGER NOT NULL DEFAULT 0,
+    locked_until BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS listings (
@@ -143,21 +148,27 @@ def connect():
         raw.close()
 
 
-_ORDER_COLUMNS = [("listing_id", "INTEGER"), ("partner_id", "INTEGER"), ("product_name", "TEXT")]
+_NEW_COLUMNS = {
+    "orders": [("listing_id", "INTEGER"), ("partner_id", "INTEGER"), ("product_name", "TEXT")],
+    "partners": [("password_hash", "TEXT"), ("setup_code_hash", "TEXT"), ("setup_expires", "BIGINT NOT NULL DEFAULT 0"),
+                 ("failed_attempts", "INTEGER NOT NULL DEFAULT 0"), ("locked_until", "BIGINT NOT NULL DEFAULT 0")],
+}
 
 
 def init_db() -> None:
+    """Create tables, then add columns introduced after a database was first created."""
     with connect() as conn:
         if IS_PG:
             conn.raw.execute(SCHEMA)
-            for col, typ in _ORDER_COLUMNS:
-                conn.raw.execute(f"ALTER TABLE orders ADD COLUMN IF NOT EXISTS {col} {typ}")
         else:
             conn.raw.executescript(SCHEMA)
-            have = {r["name"] for r in conn.raw.execute("PRAGMA table_info(orders)")}
-            for col, typ in _ORDER_COLUMNS:
-                if col not in have:
-                    conn.raw.execute(f"ALTER TABLE orders ADD COLUMN {col} {typ}")
+        for table, cols in _NEW_COLUMNS.items():
+            have = set() if IS_PG else {r["name"] for r in conn.raw.execute(f"PRAGMA table_info({table})")}
+            for col, typ in cols:
+                if IS_PG:
+                    conn.raw.execute(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {typ}")
+                elif col not in have:
+                    conn.raw.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
     with connect() as conn:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_orders_partner ON orders(partner_id)")
 
