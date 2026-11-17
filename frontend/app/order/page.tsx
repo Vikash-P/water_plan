@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { connection } from "next/server";
 import Jar from "@/components/Jar";
 import OrderForm from "@/components/OrderForm";
 import { getCatalog, getListings } from "@/lib/api";
 
 export const metadata: Metadata = { title: "Order water — WaterMart", description: "Request 20L water jars delivered to your door in Mumbai." };
 
-export default async function OrderPage() {
+// Render per request, not at build time: the build can't reach the API and would bake in an empty partner list.
+export default function OrderPage() {
+  return <Suspense><OrderContent /></Suspense>;
+}
+
+async function OrderContent() {
+  await connection();
   const [catalog, listings] = await Promise.all([getCatalog(), getListings()]);
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
