@@ -1,9 +1,12 @@
 """Water jar requests: customers place and track them; ops confirm and deliver them."""
+import hashlib
+import hmac
 import os
 import secrets
+import time
 from typing import Optional
 
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Cookie, Header, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field, field_validator
 
 from . import catalog
@@ -182,12 +185,74 @@ def cancel_order(code: str, body: PhoneIn):
 
 # ---- Ops (admin) -----------------------------------------------------------
 
-def require_admin(key: Optional[str]) -> None:
+ADMIN_COOKIE = "jd_admin"
+ADMIN_SESSION_TTL = 12 * 3600
+ADMIN_MAX_FAILS = 10
+ADMIN_FAIL_WINDOW = 15 * 60
+
+
+def _admin_secret() -> bytes:
+    secret = os.environ.get("JALDROP_AUTH_SECRET") or os.environ.get("JALDROP_ADMIN_KEY") or ""
+    return secret.encode()
+
+
+def _admin_token(exp: int) -> str:
+    return f"{exp}.{hmac.new(_admin_secret(), f'admin:{exp}'.encode(), hashlib.sha256).hexdigest()}"
+
+
+def _valid_admin_token(token: Optional[str]) -> bool:
+    try:
+        exp, sig = (token or "").split(".")
+        return int(exp) > time.time() and hmac.compare_digest(_admin_token(int(exp)).split(".")[1], sig)
+    except ValueError:
+        return False
+
+
+def require_admin(key: Optional[str], session: Optional[str] = None) -> None:
+    """Ops access: a valid admin session cookie (ID + password login), or the raw admin key in X-Admin-Key (scripts)."""
+    if session and _admin_secret() and _valid_admin_token(session):
+        return
     expected = os.environ.get("JALDROP_ADMIN_KEY")
-    if not expected:
+    if not expected and not _admin_secret():
         raise HTTPException(503, "Admin is disabled: set JALDROP_ADMIN_KEY on the server")
-    if not key or not secrets.compare_digest(key, expected):
-        raise HTTPException(401, "Invalid admin key")
+    if not expected or not key or not secrets.compare_digest(key, expected):
+        raise HTTPException(401, "Please log in")
+
+
+class AdminLoginIn(BaseModel):
+    user: str = Field(min_length=1, max_length=100)
+    password: str = Field(min_length=1, max_length=200)
+
+
+@router.post("/admin/login")
+def admin_login(body: AdminLoginIn, request: Request, response: Response):
+    """Admin ID + password. Set JALDROP_ADMIN_USER / JALDROP_ADMIN_PASSWORD (falls back to user 'admin' and the admin key)."""
+    user = os.environ.get("JALDROP_ADMIN_USER", "admin")
+    password = os.environ.get("JALDROP_ADMIN_PASSWORD") or os.environ.get("JALDROP_ADMIN_KEY")
+    if not password:
+        raise HTTPException(503, "Admin is disabled: set JALDROP_ADMIN_PASSWORD on the server")
+    now = int(time.time())
+    with connect() as conn:
+        recent = conn.execute("SELECT COUNT(*) AS n FROM admin_login_fails WHERE at > ?", (now - ADMIN_FAIL_WINDOW,)).fetchone()["n"]
+        if recent >= ADMIN_MAX_FAILS:
+            raise HTTPException(429, "Too many wrong attempts. Try again in 15 minutes.")
+        ok = secrets.compare_digest(body.user.encode(), user.encode()) & secrets.compare_digest(body.password.encode(), password.encode())
+        if not ok:
+            conn.execute("INSERT INTO admin_login_fails (at) VALUES (?)", (now,))
+            conn.execute("DELETE FROM admin_login_fails WHERE at < ?", (now - ADMIN_FAIL_WINDOW,))
+            conn.raw.commit()
+            raise HTTPException(401, "Wrong ID or password.")
+        conn.execute("DELETE FROM admin_login_fails")
+    secure = request.headers.get("x-forwarded-proto", request.url.scheme) == "https"
+    response.set_cookie(ADMIN_COOKIE, _admin_token(now + ADMIN_SESSION_TTL), max_age=ADMIN_SESSION_TTL, httponly=True,
+                        samesite="lax", secure=secure, path="/")
+    return {"ok": True}
+
+
+@router.post("/admin/logout")
+def admin_logout(response: Response):
+    response.delete_cookie(ADMIN_COOKIE, path="/")
+    return {"ok": True}
 
 
 def _admin_row(row) -> dict:
@@ -200,8 +265,8 @@ def _admin_row(row) -> dict:
 
 
 @router.get("/admin/orders")
-def admin_list(status: Optional[str] = None, x_admin_key: Optional[str] = Header(default=None)):
-    require_admin(x_admin_key)
+def admin_list(status: Optional[str] = None, x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
+    require_admin(x_admin_key, jd_admin)
     sql, args = "SELECT o.*, p.business_name AS partner_name FROM orders o LEFT JOIN partners p ON p.id = o.partner_id", []
     if status:
         sql += " WHERE o.status = ?"
@@ -213,8 +278,8 @@ def admin_list(status: Optional[str] = None, x_admin_key: Optional[str] = Header
 
 
 @router.patch("/admin/orders/{order_id}")
-def admin_set_status(order_id: int, body: StatusIn, x_admin_key: Optional[str] = Header(default=None)):
-    require_admin(x_admin_key)
+def admin_set_status(order_id: int, body: StatusIn, x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
+    require_admin(x_admin_key, jd_admin)
     with connect() as conn:
         row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
         if not row:

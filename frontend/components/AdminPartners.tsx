@@ -5,22 +5,21 @@ import { errorMessage } from "@/lib/orders";
 type Lead = { id: number; name: string; phone: string; business_name: string | null; pincode: string | null; notes: string | null };
 type Creds = { partner_id: string; name: string };
 type Partner = { id: number; phone: string; business_name: string; contact_name: string; status: string; password_set: boolean };
-type Listing = { id: number; name: string; brand: string | null; size_litres: number; price: number; pincodes: string[]; status: string; partner: string };
+type Listing = { id: number; name: string; size_litres: number; price: number; pincodes: string[]; status: string; partner: string };
 
-export default function AdminPartners({ adminKey }: { adminKey: string }) {
+export default function AdminPartners({ onExpired }: { onExpired: () => void }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [error, setError] = useState("");
   const [creds, setCreds] = useState<Creds | null>(null);
-  const h = { "X-Admin-Key": adminKey, "Content-Type": "application/json" };
+  const h = { "Content-Type": "application/json" };
   const [tick, setTick] = useState(0);
   const load = () => setTick((t) => t + 1);
 
   useEffect(() => {
     let alive = true;
-    const hd = { "X-Admin-Key": adminKey };
-    Promise.all(["partner-leads", "partners", "listings"].map((p) => fetch(`/api/admin/${p}`, { headers: hd }).then((r) => (r.ok ? r.json() : null)).catch(() => null)))
+    Promise.all(["partner-leads", "partners", "listings"].map((p) => fetch(`/api/admin/${p}`).then((r) => { if (r.status === 401) onExpired(); return r.ok ? r.json() : null; }).catch(() => null)))
       .then(([a, b, c]) => {
         if (!alive) return;
         if (a) setLeads(a.leads);
@@ -28,7 +27,8 @@ export default function AdminPartners({ adminKey }: { adminKey: string }) {
         if (c) setListings(c.listings);
       });
     return () => { alive = false; };
-  }, [adminKey, tick]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tick]);
 
   async function approve(l: Lead) {
     setError("");
@@ -64,7 +64,7 @@ export default function AdminPartners({ adminKey }: { adminKey: string }) {
         <div className="grid gap-3">
           {pending.map((l) => (
             <div key={l.id} className="card flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
-              <div><p className="font-semibold">{l.name} · {l.size_litres}L · ₹{l.price}/jar</p><p className="text-muted">{l.partner}{l.brand ? ` · ${l.brand}` : ""} · {l.pincodes.join(", ") || "all areas"}</p></div>
+              <div><p className="font-semibold">{l.name} · {l.size_litres}L · ₹{l.price}/jar</p><p className="text-muted">{l.partner} · {l.pincodes.join(", ") || "all areas"}</p></div>
               <div className="flex gap-2"><button onClick={() => review(l, "approved")} className="btn btn-primary !px-4 !py-1.5">Approve</button><button onClick={() => review(l, "rejected")} className="btn border border-line !px-4 !py-1.5">Reject</button></div>
             </div>
           ))}

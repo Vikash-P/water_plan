@@ -70,6 +70,11 @@ CREATE TABLE IF NOT EXISTS sessions (
     created_at BIGINT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS admin_login_fails (
+    id {PK},
+    at BIGINT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS partners (
     id {PK},
     phone TEXT NOT NULL UNIQUE,         -- logs in with this number (OTP)
@@ -109,6 +114,7 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE otp_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_login_fails ENABLE ROW LEVEL SECURITY;
 ALTER TABLE listings ENABLE ROW LEVEL SECURITY;
 """
 else:

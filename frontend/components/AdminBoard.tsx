@@ -1,33 +1,69 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminPartners from "@/components/AdminPartners";
 import { STATUS_LABEL, errorMessage, type AdminOrder } from "@/lib/orders";
 
 export default function AdminBoard() {
-  const [key, setKey] = useState("");
   const [orders, setOrders] = useState<AdminOrder[] | null>(null);
   const [filter, setFilter] = useState("");
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"orders" | "partners">("orders");
+  const [checking, setChecking] = useState(true);
+  const [busy, setBusy] = useState(false);
 
-  async function load(k = key, f = filter) {
+  async function load(f = filter) {
     setError("");
-    const res = await fetch(`/api/admin/orders${f ? `?status=${f}` : ""}`, { headers: { "X-Admin-Key": k } });
+    const res = await fetch(`/api/admin/orders${f ? `?status=${f}` : ""}`);
     const data = await res.json().catch(() => ({}));
-    if (res.ok) setOrders(data.orders); else { setOrders(null); setError(errorMessage(data)); }
+    if (res.ok) setOrders(data.orders); else { setOrders(null); if (res.status !== 401) setError(errorMessage(data)); }
+    return res.ok;
+  }
+
+  // Already logged in (cookie from an earlier visit)? Skip the form.
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/admin/orders").then((r) => (r.ok ? r.json() : null)).catch(() => null).then((d) => {
+      if (!alive) return;
+      if (d) setOrders(d.orders);
+      setChecking(false);
+    });
+    return () => { alive = false; };
+  }, []);
+
+  async function login(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    setBusy(true); setError("");
+    try {
+      const res = await fetch("/api/admin/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ user: String(f.get("user")).trim(), password: String(f.get("password")) }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { setError(errorMessage(data)); return; }
+      await load();
+    } catch { setError("Couldn't reach the server. Please try again."); }
+    finally { setBusy(false); }
+  }
+
+  async function logout() {
+    await fetch("/api/admin/logout", { method: "POST" });
+    setOrders(null);
   }
 
   async function move(o: AdminOrder, status: string) {
-    const res = await fetch(`/api/admin/orders/${o.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", "X-Admin-Key": key }, body: JSON.stringify({ status }) });
+    const res = await fetch(`/api/admin/orders/${o.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
     const data = await res.json().catch(() => ({}));
     if (res.ok) setOrders((prev) => prev && prev.map((x) => (x.id === o.id ? data : x))); else setError(errorMessage(data));
   }
 
+  if (checking) return <p className="text-muted" role="status">Loading…</p>;
   if (!orders) {
     return (
-      <form onSubmit={(e) => { e.preventDefault(); load(); }} className="grid max-w-sm gap-3">
-        <input type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder="Admin key" aria-label="Admin key" className="field" required />
-        <button className="btn btn-primary">Open orders</button>
+      <form onSubmit={login} className="card grid max-w-sm gap-3 p-6">
+        <h2 className="text-xl font-bold">Admin login</h2>
+        <label htmlFor="ad-user" className="small text-muted">User ID</label>
+        <input id="ad-user" name="user" required autoComplete="username" className="field" />
+        <label htmlFor="ad-pass" className="small text-muted">Password</label>
+        <input id="ad-pass" name="password" type="password" required autoComplete="current-password" className="field" />
+        <button disabled={busy} className="btn btn-primary">{busy ? "Please wait…" : "Log in"}</button>
         {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
       </form>
     );
@@ -39,12 +75,13 @@ export default function AdminBoard() {
         {(["orders", "partners"] as const).map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`btn !px-5 !py-2 text-sm border border-line ${tab === t ? "!bg-brand text-white" : ""}`}>{t === "orders" ? "Orders" : "Partners & listings"}</button>
         ))}
+        <button onClick={logout} className="btn ml-auto border border-line !px-4 !py-2 text-sm">Log out</button>
       </div>
-      {tab === "partners" ? <AdminPartners adminKey={key} /> : (
+      {tab === "partners" ? <AdminPartners onExpired={() => setOrders(null)} /> : (
       <>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         {["", "requested", "confirmed", "out_for_delivery", "delivered", "cancelled"].map((s) => (
-          <button key={s} onClick={() => { setFilter(s); load(key, s); }} className={`btn !px-4 !py-1.5 text-sm border border-line ${filter === s ? "!bg-brand text-white" : ""}`}>{s ? STATUS_LABEL[s] : "All"}</button>
+          <button key={s} onClick={() => { setFilter(s); load(s); }} className={`btn !px-4 !py-1.5 text-sm border border-line ${filter === s ? "!bg-brand text-white" : ""}`}>{s ? STATUS_LABEL[s] : "All"}</button>
         ))}
         <button onClick={() => load()} className="btn !px-4 !py-1.5 text-sm">Refresh</button>
       </div>

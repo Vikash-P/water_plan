@@ -11,7 +11,7 @@ from app.main import app  # noqa: E402
 
 ADMIN = {"X-Admin-Key": "test-key"}
 PHONE = "9830011111"
-L = {"name": "Aqua Pure 20L", "brand": "AquaPure", "size_litres": 20, "price": 58, "pincodes": "400053, 400058"}
+L = {"name": "Aqua Pure 20L", "size_litres": 20, "price": 58, "pincodes": "400053, 400058"}
 
 
 def login(c, phone):
@@ -119,3 +119,19 @@ def test_partner_lockout_after_five_failures():
         for _ in range(5):
             assert c.post("/api/partner/auth/login", json={"phone": ph, "password": "wrong-pass"}).status_code == 401
         assert c.post("/api/partner/auth/login", json={"phone": ph, "password": "rightpass123"}).status_code == 429
+
+
+def test_admin_id_password_login():
+    with TestClient(app) as c:
+        assert c.get("/api/admin/orders").status_code == 401
+        assert c.post("/api/admin/login", json={"user": "admin", "password": "wrong"}).status_code == 401
+        assert c.post("/api/admin/login", json={"user": "boss", "password": "test-key"}).status_code == 401
+        assert c.post("/api/admin/login", json={"user": "admin", "password": "test-key"}).status_code == 200
+        assert c.get("/api/admin/orders").status_code == 200          # cookie session works
+        assert c.get("/api/admin/partners").status_code == 200
+        c.post("/api/admin/logout")
+        assert c.get("/api/admin/orders").status_code == 401
+    with TestClient(app) as c2:
+        assert c2.get("/api/admin/orders", headers={"X-Admin-Key": "test-key"}).status_code == 200  # scripts still work
+        c2.cookies.set("jd_admin", "9999999999.deadbeef")
+        assert c2.get("/api/admin/orders").status_code == 401  # forged cookie rejected

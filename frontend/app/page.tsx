@@ -26,7 +26,7 @@ export default async function Home() {
       partner: false, pincodes: [], badge: p.tagline, note: p.validity_days ? `Valid ${p.validity_days} days` : `${p.jars} jar`,
     })),
     ...listings.map((l): Item => ({
-      key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: l.brand ? `${l.brand} · ${l.partner}` : l.partner, price: l.price, perJar: l.price,
+      key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: l.partner === l.name ? "Verified partner" : `by ${l.partner}`, price: l.price, perJar: l.price,
       kind: "jar", partner: true, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
     })),
   ];

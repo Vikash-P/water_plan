@@ -31,7 +31,7 @@ const FALLBACK: Catalog = {
   ],
 };
 
-export type Listing = { id: number; name: string; brand: string | null; size_litres: number; price: number; pincodes: string[]; partner: string };
+export type Listing = { id: number; name: string; size_litres: number; price: number; pincodes: string[]; partner: string };
 
 export async function getListings(): Promise<Listing[]> {
   "use cache";

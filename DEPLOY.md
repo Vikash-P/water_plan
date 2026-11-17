@@ -22,6 +22,7 @@ The browser only ever talks to one domain: `/api/*` goes to the backend, everyth
 2. Environment variables (Project → Settings → Environment Variables):
    - `DATABASE_URL` — the Supabase pooler URI
    - `JALDROP_ADMIN_KEY` — a long random secret (the password for `/admin`)
+   - `JALDROP_ADMIN_USER` and `JALDROP_ADMIN_PASSWORD` — the ID and password for the `/admin` login (if unset, the ID is `admin` and the password is `JALDROP_ADMIN_KEY`)
    - `JALDROP_AUTH_SECRET` — a long random secret used to sign login sessions (needed for partner and customer login)
 3. Deploy. Then check `https://<your-domain>/api/health` returns `{"ok":true}`, open the site, check a pincode,
    place a test order, and open `/admin` with your admin key.

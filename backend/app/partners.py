@@ -142,7 +142,6 @@ def _pins(v: str) -> str:
 
 class ListingIn(BaseModel):
     name: str = Field(min_length=2, max_length=100)
-    brand: Optional[str] = Field(default=None, max_length=80)
     size_litres: int = Field(default=20, ge=1, le=50)
     price: int = Field(ge=1, le=5000)
     pincodes: str = Field(default="", max_length=200)
@@ -154,7 +153,7 @@ class ListingIn(BaseModel):
 
 
 def _listing(r, with_partner=False) -> dict:
-    d = {"id": r["id"], "name": r["name"], "brand": r["brand"], "size_litres": r["size_litres"], "price": r["price"],
+    d = {"id": r["id"], "name": r["name"], "size_litres": r["size_litres"], "price": r["price"],
          "pincodes": [x for x in r["pincodes"].split(",") if x], "status": r["status"], "review_note": r["review_note"]}
     if with_partner:
         d["partner"] = r["business_name"]
@@ -178,8 +177,8 @@ def add_listing(body: ListingIn, p: dict = Depends(require_partner)):
         if n >= MAX_LISTINGS:
             raise HTTPException(409, f"You can list up to {MAX_LISTINGS} products.")
         row = conn.execute(
-            "INSERT INTO listings (partner_id, name, brand, size_litres, price, pincodes) VALUES (?,?,?,?,?,?) RETURNING *",
-            (p["id"], body.name.strip(), (body.brand or "").strip() or None, body.size_litres, body.price, body.pincodes),
+            "INSERT INTO listings (partner_id, name, size_litres, price, pincodes) VALUES (?,?,?,?,?) RETURNING *",
+            (p["id"], body.name.strip(), body.size_litres, body.price, body.pincodes),
         ).fetchone()
     return _listing(row)
 
@@ -192,9 +191,9 @@ def edit_listing(listing_id: int, body: ListingIn, p: dict = Depends(require_par
             raise HTTPException(404, "Listing not found")
         # Any edit goes back to review so a partner can't swap the price of an approved product unseen.
         row = conn.execute(
-            "UPDATE listings SET name=?, brand=?, size_litres=?, price=?, pincodes=?, status='pending', review_note=NULL,"
+            "UPDATE listings SET name=?, size_litres=?, price=?, pincodes=?, status='pending', review_note=NULL,"
             " updated_at=CURRENT_TIMESTAMP WHERE id=? RETURNING *",
-            (body.name.strip(), (body.brand or "").strip() or None, body.size_litres, body.price, body.pincodes, listing_id),
+            (body.name.strip(), body.size_litres, body.price, body.pincodes, listing_id),
         ).fetchone()
     return _listing(row)
 
@@ -275,8 +274,8 @@ class ReviewIn(BaseModel):
 
 
 @router.get("/admin/partner-leads")
-def admin_partner_leads(x_admin_key: Optional[str] = Header(default=None)):
-    require_admin(x_admin_key)
+def admin_partner_leads(x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
+    require_admin(x_admin_key, jd_admin)
     with connect() as conn:
         rows = conn.execute(
             "SELECT id, name, phone, business_name, pincode, notes FROM leads WHERE kind = 'partner' ORDER BY id DESC LIMIT 100"
@@ -285,8 +284,8 @@ def admin_partner_leads(x_admin_key: Optional[str] = Header(default=None)):
 
 
 @router.post("/admin/partners", status_code=201)
-def admin_add_partner(body: PartnerIn, x_admin_key: Optional[str] = Header(default=None)):
-    require_admin(x_admin_key)
+def admin_add_partner(body: PartnerIn, x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
+    require_admin(x_admin_key, jd_admin)
     with connect() as conn:
         if conn.execute("SELECT 1 FROM partners WHERE phone = ?", (body.phone,)).fetchone():
             raise HTTPException(409, "A partner with this phone already exists")
@@ -299,9 +298,9 @@ def admin_add_partner(body: PartnerIn, x_admin_key: Optional[str] = Header(defau
 
 
 @router.post("/admin/partners/{partner_id}/reset")
-def admin_reset_partner(partner_id: int, x_admin_key: Optional[str] = Header(default=None)):
+def admin_reset_partner(partner_id: int, x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
     """Forgotten password: clears it so the partner can create a new one, and logs them out."""
-    require_admin(x_admin_key)
+    require_admin(x_admin_key, jd_admin)
     with connect() as conn:
         p = conn.execute("SELECT * FROM partners WHERE id = ?", (partner_id,)).fetchone()
         if not p:
@@ -313,8 +312,8 @@ def admin_reset_partner(partner_id: int, x_admin_key: Optional[str] = Header(def
 
 
 @router.get("/admin/partners")
-def admin_partners(x_admin_key: Optional[str] = Header(default=None)):
-    require_admin(x_admin_key)
+def admin_partners(x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
+    require_admin(x_admin_key, jd_admin)
     with connect() as conn:
         rows = conn.execute("SELECT * FROM partners ORDER BY id DESC").fetchall()
     return {"partners": [{"id": r["id"], "phone": r["phone"], "business_name": r["business_name"],
@@ -323,8 +322,8 @@ def admin_partners(x_admin_key: Optional[str] = Header(default=None)):
 
 
 @router.get("/admin/listings")
-def admin_listings(status: Optional[str] = None, x_admin_key: Optional[str] = Header(default=None)):
-    require_admin(x_admin_key)
+def admin_listings(status: Optional[str] = None, x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
+    require_admin(x_admin_key, jd_admin)
     sql, args = "SELECT l.*, p.business_name FROM listings l JOIN partners p ON p.id = l.partner_id", []
     if status:
         sql += " WHERE l.status = ?"
@@ -335,8 +334,8 @@ def admin_listings(status: Optional[str] = None, x_admin_key: Optional[str] = He
 
 
 @router.patch("/admin/listings/{listing_id}")
-def admin_review(listing_id: int, body: ReviewIn, x_admin_key: Optional[str] = Header(default=None)):
-    require_admin(x_admin_key)
+def admin_review(listing_id: int, body: ReviewIn, x_admin_key: Optional[str] = Header(default=None), jd_admin: Optional[str] = Cookie(default=None)):
+    require_admin(x_admin_key, jd_admin)
     with connect() as conn:
         row = conn.execute(
             "UPDATE listings SET status=?, review_note=?, updated_at=CURRENT_TIMESTAMP WHERE id=? RETURNING id",
