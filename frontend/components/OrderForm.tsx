@@ -47,16 +47,24 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
     return () => window.removeEventListener("jd-pick", onPick);
   }, []);
 
-  async function loadSaved() {
+  // Only fills in once the customer has typed their own number. A login left over in this browser is used
+  // silently when the typed number matches it; any other number has to be verified with a code.
+  async function loadSaved(typed?: string) {
     try {
       const r = await fetch("/api/me/addresses");
-      if (!r.ok) { setSaved("login"); return; }
+      if (!r.ok) { if (!typed) setSaved("login"); return; }
       const d: Saved = await r.json();
+      if (typed && d.phone !== typed) return;
       setSaved(d);
       setFill((f) => ({ ...f, name: d.name ?? f.name, phone: d.phone }));
       setFillKey((k) => k + 1);
       if (d.addresses.length === 1) chooseAddr(d, 0);
-    } catch { setSaved("login"); }
+    } catch { if (!typed) setSaved("login"); }
+  }
+  function onVPhone(v: string) {
+    setVPhone(v);
+    const digits = v.replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
+    if (digits.length === 10) loadSaved(digits);
   }
 
   function chooseAddr(d: Saved, i: number) {
@@ -173,7 +181,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
             </select>
           </label>
           <label className="flex items-center gap-3 text-sm">
-            <input type="checkbox" checked={hasJars} onChange={(e) => { setHasJars(e.target.checked); if (e.target.checked && saved === null) loadSaved(); }} className="h-5 w-5 accent-[var(--brand)]" />
+            <input type="checkbox" checked={hasJars} onChange={(e) => { setHasJars(e.target.checked); setSaved(e.target.checked ? "login" : null); setPicked(-1); }} className="h-5 w-5 accent-[var(--brand)]" />
             I already have WaterMart jars to swap (no new deposit)
           </label>
           {hasJars && saved === "login" && (
@@ -181,7 +189,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
               <p className="font-semibold">Welcome back! Enter your number and we’ll fill in your address.</p>
               {!vSent ? (
                 <div className="flex gap-2">
-                  <input value={vPhone} onChange={(e) => setVPhone(e.target.value)} onKeyDown={enter(sendCode)} inputMode="tel" autoComplete="tel" placeholder="Your 10-digit mobile number" aria-label="Your mobile number" className="field" />
+                  <input value={vPhone} onChange={(e) => onVPhone(e.target.value)} onKeyDown={enter(sendCode)} inputMode="tel" autoComplete="tel" placeholder="Your 10-digit mobile number" aria-label="Your mobile number" className="field" />
                   <button type="button" onClick={sendCode} disabled={vBusy || vPhone.length < 10} className="btn btn-primary shrink-0 !px-4">{vBusy ? "Sending…" : "Send code"}</button>
                 </div>
               ) : (
@@ -196,6 +204,9 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
               {vErr && <p className="text-red-600" role="alert">{vErr}</p>}
               <p className="text-muted">No saved address, or don’t want to verify? Just fill the details below.</p>
             </div>
+          )}
+          {hasJars && saved && saved !== "login" && saved.addresses.length === 0 && (
+            <p className="text-sm text-muted" role="status">Welcome back, {saved.phone}. You have no saved address yet. Fill it in below once and we’ll remember it for next time.</p>
           )}
           {hasJars && saved && saved !== "login" && saved.addresses.length > 0 && (
             <div className="grid gap-2 text-sm">
