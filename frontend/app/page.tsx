@@ -20,23 +20,29 @@ export default async function Home() {
   const catalog = await getCatalog();
   return (
     <>
-      <section id="start" className="bg-gradient-to-b from-brand/10 to-background">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2 md:py-24">
+      <section id="start">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 md:grid-cols-2 md:py-20">
           <div>
             <h1 className="display rise">
-              20L drinking water at your door in <span className="text-brand">2 hours</span>.
+              Refill your water with <span className="text-brand">one message</span>.
             </h1>
-            <p className="lead mt-4">ISI-certified, prepaid, one-tap refills. Built for Mumbai flats — no more calling around.</p>
+            <p className="lead mt-4 max-w-md">
+              Order on WhatsApp or tap once on the site. A verified rider brings a sealed ISI 20L jar in about 2 hours. Pay once, refill all month.
+            </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link href="/order" className="btn btn-primary">Order water now</Link>
               <Link href="/track" className="btn border border-line">Track an order</Link>
             </div>
             <div className="mt-6 max-w-md"><p className="small mb-2 text-muted">Check if we deliver to you</p><PincodeChecker /></div>
           </div>
-          <div className="card p-6 shadow-sm">
-            <h2 className="text-xl font-semibold">Get your first jar free</h2>
-            <p className="mb-4 text-sm text-muted">You only pay the ₹{catalog.deposit_per_jar} refundable deposit.</p>
-            <LeadForm kind="waitlist" cta="Join waitlist" />
+          <div className="phone" aria-label="Example WhatsApp refill conversation">
+            <div className="phone-head"><i>J</i>JalDrop</div>
+            <div className="phone-msgs">
+              <div className="bubble me">Refill please<small>9:41</small></div>
+              <div className="bubble">Hi Asha! 1 jar to Flat 402. Credits left: 7.<br /><span className="pill">Confirm refill</span><small>9:41</small></div>
+              <div className="bubble me">Confirm<small>9:42</small></div>
+              <div className="bubble">Rider Sunil arrives by 11:40. Your OTP is <b>4821</b>.<small>9:42</small></div>
+            </div>
           </div>
         </div>
       </section>
@@ -46,7 +52,7 @@ export default async function Home() {
         <div className="mt-8 grid gap-6 md:grid-cols-3">
           {steps.map((s, i) => (
             <div key={s.t} className="card p-6">
-              <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-brand font-bold text-white">{i + 1}</div>
+              <div className="num-badge">{i + 1}</div>
               <h3 className="font-semibold">{s.t}</h3>
               <p className="mt-2 text-sm text-muted">{s.d}</p>
             </div>
@@ -94,6 +100,13 @@ export default async function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <div className="card mx-auto max-w-xl p-6 shadow-sm">
+          <h2 className="text-xl font-extrabold">Get your first jar free</h2>
+          <p className="mb-4 text-sm text-muted">You only pay the ₹{catalog.deposit_per_jar} refundable deposit.</p>
+          <LeadForm kind="waitlist" cta="Join waitlist" />
         </div>
       </section>
     </>
