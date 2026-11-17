@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import AdminPartners from "@/components/AdminPartners";
 import { STATUS_LABEL, errorMessage, type AdminOrder } from "@/lib/orders";
 
 export default function AdminBoard() {
@@ -7,6 +8,7 @@ export default function AdminBoard() {
   const [orders, setOrders] = useState<AdminOrder[] | null>(null);
   const [filter, setFilter] = useState("");
   const [error, setError] = useState("");
+  const [tab, setTab] = useState<"orders" | "partners">("orders");
 
   async function load(k = key, f = filter) {
     setError("");
@@ -33,6 +35,13 @@ export default function AdminBoard() {
 
   return (
     <div>
+      <div className="mb-6 flex gap-2" role="tablist">
+        {(["orders", "partners"] as const).map((t) => (
+          <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`btn !px-5 !py-2 text-sm border border-line ${tab === t ? "!bg-brand text-white" : ""}`}>{t === "orders" ? "Orders" : "Partners & listings"}</button>
+        ))}
+      </div>
+      {tab === "partners" ? <AdminPartners adminKey={key} /> : (
+      <>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         {["", "requested", "confirmed", "out_for_delivery", "delivered", "cancelled"].map((s) => (
           <button key={s} onClick={() => { setFilter(s); load(key, s); }} className={`btn !px-4 !py-1.5 text-sm border border-line ${filter === s ? "!bg-brand text-white" : ""}`}>{s ? STATUS_LABEL[s] : "All"}</button>
@@ -59,6 +68,8 @@ export default function AdminBoard() {
           </div>
         ))}
       </div>
+      </>
+      )}
     </div>
   );
 }

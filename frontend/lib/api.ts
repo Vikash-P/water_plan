@@ -31,6 +31,20 @@ const FALLBACK: Catalog = {
   ],
 };
 
+export type Listing = { id: number; name: string; brand: string | null; size_litres: number; price: number; pincodes: string[]; partner: string };
+
+export async function getListings(): Promise<Listing[]> {
+  "use cache";
+  cacheLife("minutes");
+  try {
+    const res = await fetch(new URL("api/listings", backendBase()));
+    if (!res.ok) return [];
+    return (await res.json()).listings;
+  } catch {
+    return [];
+  }
+}
+
 export async function getCatalog(): Promise<Catalog> {
   "use cache";
   cacheLife("minutes");

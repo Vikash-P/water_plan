@@ -66,6 +66,30 @@ CREATE TABLE IF NOT EXISTS sessions (
     expires_at BIGINT NOT NULL,
     created_at BIGINT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS partners (
+    id {PK},
+    phone TEXT NOT NULL UNIQUE,         -- logs in with this number (OTP)
+    business_name TEXT NOT NULL,
+    contact_name TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',   -- active | suspended
+    created_at {TS}
+);
+
+CREATE TABLE IF NOT EXISTS listings (
+    id {PK},
+    partner_id INTEGER NOT NULL REFERENCES partners(id),
+    name TEXT NOT NULL,
+    brand TEXT,
+    size_litres INTEGER NOT NULL,
+    price INTEGER NOT NULL,             -- rupees per unit, set by the partner
+    pincodes TEXT NOT NULL DEFAULT '',  -- comma-separated delivery pincodes
+    status TEXT NOT NULL DEFAULT 'pending',  -- pending | approved | rejected
+    review_note TEXT,
+    created_at {TS},
+    updated_at {TS}
+);
+CREATE INDEX IF NOT EXISTS idx_listings_partner ON listings(partner_id);
 """
 
 if IS_PG:
@@ -76,6 +100,8 @@ ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE otp_codes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE partners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE listings ENABLE ROW LEVEL SECURITY;
 """
 else:
     SCHEMA = _SCHEMA.format(PK="INTEGER PRIMARY KEY AUTOINCREMENT", TS="TEXT NOT NULL DEFAULT (datetime('now'))")

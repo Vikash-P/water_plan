@@ -1,9 +1,9 @@
-import Link from "next/link";
 import PincodeChecker from "@/components/PincodeChecker";
 import OrderForm from "@/components/OrderForm";
 import Jar from "@/components/Jar";
 import LeadForm from "@/components/LeadForm";
-import { getCatalog } from "@/lib/api";
+import Browse, { type Item } from "@/components/Browse";
+import { getCatalog, getListings } from "@/lib/api";
 
 const steps = [
   { t: "Pick a pass", d: "Pay once by UPI for 10 or 20 jars. Pay a refundable ₹350 deposit per jar we place with you." },
@@ -19,38 +19,37 @@ const trust = [
 ];
 
 export default async function Home() {
-  const catalog = await getCatalog();
+  const [catalog, listings] = await Promise.all([getCatalog(), getListings()]);
+  const items: Item[] = [
+    ...catalog.products.map((p): Item => ({
+      key: `jd-${p.id}`, name: p.name, seller: "JalDrop", price: p.price, perJar: p.per_jar, kind: p.jars > 1 ? "pass" : "jar",
+      partner: false, pincodes: [], badge: p.tagline, note: p.validity_days ? `Valid ${p.validity_days} days` : `${p.jars} jar`,
+    })),
+    ...listings.map((l): Item => ({
+      key: `l-${l.id}`, name: l.name, seller: l.brand ? `${l.brand} · ${l.partner}` : l.partner, price: l.price, perJar: l.price,
+      kind: "jar", partner: true, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
+    })),
+  ];
   return (
     <>
-      <section id="start">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 md:grid-cols-2 md:py-20">
-          <div>
-            <h1 className="display rise">
-              Refill your water with <span className="text-brand">one message</span>.
-            </h1>
-            <p className="lead mt-4 max-w-md">
-              Order on WhatsApp or tap once on the site. A verified rider brings a sealed ISI 20L jar in about 2 hours. Pay once, refill all month.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <a href="#order" className="btn btn-primary">Order water now</a>
-              <Link href="/track" className="btn border border-line">Track an order</Link>
+      <section id="start" className="bg-gradient-to-b from-brand-soft to-background">
+        <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
+          <div className="flex items-center gap-6">
+            <div className="min-w-0 flex-1">
+              <h1 className="display rise">20L water, delivered to your door in <span className="text-brand">2 hours</span>.</h1>
+              <p className="lead mt-3 max-w-xl">Pick a brand from verified Mumbai partners. Prepaid, ISI-certified, no signup needed.</p>
+              <div className="mt-6 max-w-lg"><PincodeChecker /></div>
+              <p className="mt-4 inline-block rounded-full bg-card px-3 py-1 text-sm font-semibold text-brand shadow-sm">No signup needed to order.</p>
             </div>
-            <p className="mt-4 inline-block rounded-full bg-brand-soft px-3 py-1 text-sm font-semibold text-brand">No signup needed to order.</p>
-            <div className="mt-6 max-w-md"><p className="small mb-2 text-muted">Check if we deliver to you</p><PincodeChecker /></div>
-          </div>
-          <div className="flex items-end justify-center gap-4">
-          <Jar className="hidden w-28 shrink-0 drop-shadow-xl sm:block" />
-          <div className="phone !mx-0" aria-label="Example WhatsApp refill conversation">
-            <div className="phone-head"><i>J</i>JalDrop</div>
-            <div className="phone-msgs">
-              <div className="bubble me">Refill please<small>9:41</small></div>
-              <div className="bubble">Hi Asha! 1 jar to Flat 402. Credits left: 7.<br /><span className="pill">Confirm refill</span><small>9:41</small></div>
-              <div className="bubble me">Confirm<small>9:42</small></div>
-              <div className="bubble">Rider Sunil arrives by 11:40. Your OTP is <b>4821</b>.<small>9:42</small></div>
-            </div>
-          </div>
+            <Jar className="hidden h-56 shrink-0 drop-shadow-xl md:block" />
           </div>
         </div>
+      </section>
+
+      <section id="pricing" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-10">
+        <h2 className="title mb-1">Order online from top water partners</h2>
+        <p className="mb-6 text-muted">Jar deposit of ₹{catalog.deposit_per_jar} is fully refundable when you return the jar. Passes are always cheaper per jar.</p>
+        <Browse items={items} />
       </section>
 
       <section id="order" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-12">
@@ -75,24 +74,6 @@ export default async function Home() {
               <p className="mt-2 text-sm text-muted">{s.d}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      <section id="pricing" className="py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="title">Simple pricing</h2>
-          <p className="mt-2 text-muted">Passes are always cheaper per jar. Jar deposit of ₹{catalog.deposit_per_jar} is fully refundable when you return the jar.</p>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {catalog.products.map((p) => (
-              <div key={p.id} className={`card relative p-6 ${p.highlight ? "!border-brand ring-2 ring-brand" : ""}`}>
-                <Jar className="absolute right-5 top-5 w-10" />
-                <p className="text-sm font-medium text-brand">{p.tagline}</p>
-                <h3 className="mt-1 text-xl font-semibold">{p.name}</h3>
-                <p className="mt-4 text-4xl font-bold">₹{p.price}</p>
-                <p className="text-sm text-muted">₹{p.per_jar} per jar{p.validity_days ? ` · valid ${p.validity_days} days` : ""}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

@@ -36,7 +36,7 @@ export default function Account() {
   return <Home me={me!} reload={load} logout={logout} />;
 }
 
-function Login({ onDone }: { onDone: () => void }) {
+export function Login({ onDone, title = "Log in", intro = "See your orders and refill in one tap. We send a 6-digit code to your phone.", footer = true }: { onDone: () => void; title?: string; intro?: string; footer?: boolean }) {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
@@ -70,8 +70,8 @@ function Login({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="card mx-auto max-w-md p-6">
-      <h1 className="title">Log in</h1>
-      <p className="lead mt-2">See your orders and refill in one tap. We send a 6-digit code to your phone.</p>
+      <h1 className="title">{title}</h1>
+      <p className="lead mt-2">{intro}</p>
       {!sent ? (
         <form onSubmit={send} className="mt-6 grid gap-3">
           <label htmlFor="acc-phone" className="small text-muted">Mobile number</label>
@@ -89,7 +89,7 @@ function Login({ onDone }: { onDone: () => void }) {
         </form>
       )}
       {error && <p className="mt-3 text-sm text-red-600" role="alert">{error}</p>}
-      <p className="small mt-6 text-muted">New here? <Link href="/order" className="text-brand underline">Place your first order</Link>. No account needed.</p>
+      {footer && <p className="small mt-6 text-muted">New here? <Link href="/order" className="text-brand underline">Place your first order</Link>. No account needed.</p>}
     </div>
   );
 }

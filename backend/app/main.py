@@ -9,6 +9,7 @@ from . import catalog
 from .db import connect, init_db
 from .auth import router as auth_router
 from .me import router as me_router
+from .partners import router as partners_router
 from .orders import router as orders_router
 from .validators import PIN_RE, normalize_phone
 
@@ -23,10 +24,11 @@ app = FastAPI(title="JalDrop API", version="0.1.0", lifespan=lifespan)
 app.include_router(orders_router)
 app.include_router(auth_router)
 app.include_router(me_router)
+app.include_router(partners_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
-    allow_methods=["GET", "POST", "PATCH"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["*"],
 )
 
