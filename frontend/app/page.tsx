@@ -20,16 +20,20 @@ const trust = [
 
 export default async function Home() {
   const [catalog, listings] = await Promise.all([getCatalog(), getListings()]);
-  const items: Item[] = [
+  // Once any partner is listed, show only partner products; WaterMart's own packs are the fallback so the page is never empty.
+  const own: Item[] = [
     ...catalog.products.map((p): Item => ({
       key: `jd-${p.id}`, pick: p.id, name: p.name, seller: "WaterMart", price: p.price, perJar: p.per_jar, kind: p.jars > 1 ? "pass" : "jar",
       partner: false, pincodes: [], badge: p.tagline, note: p.validity_days ? `Valid ${p.validity_days} days` : `${p.jars} jar`,
     })),
+  ];
+  const partnerItems: Item[] = [
     ...listings.map((l): Item => ({
       key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: l.partner === l.name ? "Verified partner" : `by ${l.partner}`, price: l.price, perJar: l.price,
       kind: "jar", partner: true, partnerName: l.partner, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
     })),
   ];
+  const items = partnerItems.length > 0 ? partnerItems : own;
   return (
     <>
       <section id="start" className="bg-gradient-to-b from-brand-soft to-background">
