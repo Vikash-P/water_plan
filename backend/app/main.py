@@ -7,6 +7,8 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from . import catalog
 from .db import connect, init_db
+from .auth import router as auth_router
+from .me import router as me_router
 from .orders import router as orders_router
 from .validators import PIN_RE, normalize_phone
 
@@ -19,6 +21,8 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(title="JalDrop API", version="0.1.0", lifespan=lifespan)
 app.include_router(orders_router)
+app.include_router(auth_router)
+app.include_router(me_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],

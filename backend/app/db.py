@@ -47,6 +47,25 @@ CREATE TABLE IF NOT EXISTS orders (
     updated_at {TS}
 );
 CREATE INDEX IF NOT EXISTS idx_orders_phone ON orders(phone);
+
+CREATE TABLE IF NOT EXISTS otp_codes (
+    id {PK},
+    phone TEXT NOT NULL,
+    code_hash TEXT NOT NULL,
+    expires_at BIGINT NOT NULL,        -- unix seconds
+    attempts INTEGER NOT NULL DEFAULT 0,
+    used INTEGER NOT NULL DEFAULT 0,
+    created_at BIGINT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_otp_phone ON otp_codes(phone, created_at);
+
+CREATE TABLE IF NOT EXISTS sessions (
+    id {PK},
+    token_hash TEXT NOT NULL UNIQUE,
+    phone TEXT NOT NULL,
+    expires_at BIGINT NOT NULL,
+    created_at BIGINT NOT NULL
+);
 """
 
 if IS_PG:
@@ -55,6 +74,8 @@ if IS_PG:
     SCHEMA = _SCHEMA.format(PK="SERIAL PRIMARY KEY", TS="TIMESTAMPTZ NOT NULL DEFAULT now()") + """
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE otp_codes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 """
 else:
     SCHEMA = _SCHEMA.format(PK="INTEGER PRIMARY KEY AUTOINCREMENT", TS="TEXT NOT NULL DEFAULT (datetime('now'))")

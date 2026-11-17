@@ -96,6 +96,10 @@ def _public(row) -> dict:
 
 @router.post("/orders", status_code=201)
 def create_order(order: OrderIn):
+    return place_order(order)
+
+
+def place_order(order: OrderIn) -> dict:
     product = next((p for p in catalog.PRODUCTS if p["id"] == order.product_id), None)
     if not product:
         raise HTTPException(422, "Unknown product")
