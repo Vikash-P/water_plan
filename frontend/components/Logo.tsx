@@ -9,7 +9,7 @@ export default function Logo({ className = "h-6" }: { className?: string }) {
           <stop offset="1" style={{ stopColor: "var(--logo-3)" }} />
         </linearGradient>
       </defs>
-      <text x="0" y="32" fontFamily="var(--font-comfortaa), 'Comfortaa', system-ui, sans-serif" fontWeight="700" fontSize="36" letterSpacing="3" fill="url(#wm-grad)">WATERMART</text>
+      <text x="0" y="32" style={{ fontFamily: "var(--font-comfortaa), system-ui, sans-serif" }} fontWeight="700" fontSize="36" letterSpacing="3" fill="url(#wm-grad)">WATERMART</text>
     </svg>
   );
 }
