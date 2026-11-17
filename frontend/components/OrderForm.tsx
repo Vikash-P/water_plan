@@ -7,7 +7,7 @@ import { SLOTS, errorMessage, type Order } from "@/lib/orders";
 type Zone = { status: string; zone: string | null } | null;
 
 export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog; listings?: Listing[] }) {
-  const [product, setProduct] = useState("single");
+  const [product, setProduct] = useState(listings.length > 0 ? `l:${listings[0].id}` : "single");
   const [jars, setJars] = useState(1);
   const [hasJars, setHasJars] = useState(false);
   const [slot, setSlot] = useState("asap");
@@ -95,7 +95,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
         <fieldset className="grid gap-3">
           <legend className="mb-1 font-semibold">1. What would you like?</legend>
           <div className="grid gap-3 sm:grid-cols-3">
-            {catalog.products.map((x) => (
+            {(listings.length > 0 ? [] : catalog.products).map((x) => (
               <label key={x.id} className={`card cursor-pointer p-4 transition-colors ${product === x.id ? "!border-brand ring-2 ring-brand" : ""}`}>
                 <input type="radio" name="product" className="sr-only" checked={product === x.id} onChange={() => setProduct(x.id)} />
                 <span className="block text-xs font-medium text-brand">{x.tagline}</span>
