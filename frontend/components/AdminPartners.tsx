@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import { errorMessage } from "@/lib/orders";
 
-type Lead = { id: number; name: string; phone: string; business_name: string | null; pincode: string | null; deposit: number | null; notes: string | null };
+type Lead = { id: number; name: string; phone: string; business_name: string | null; pincode: string | null; notes: string | null };
 type Creds = { partner_id: string; name: string };
-type Partner = { id: number; phone: string; business_name: string; contact_name: string; deposit_per_jar: number; status: string; password_set: boolean };
+type Partner = { id: number; phone: string; business_name: string; contact_name: string; status: string; password_set: boolean };
 type Listing = { id: number; name: string; size_litres: number; price: number; pincodes: string[]; status: string; partner: string };
 
 export default function AdminPartners({ onExpired }: { onExpired: () => void }) {
@@ -32,7 +32,7 @@ export default function AdminPartners({ onExpired }: { onExpired: () => void }) 
 
   async function approve(l: Lead) {
     setError("");
-    const res = await fetch("/api/admin/partners", { method: "POST", headers: h, body: JSON.stringify({ phone: l.phone, business_name: l.business_name || l.name, contact_name: l.name, deposit_per_jar: l.deposit }) });
+    const res = await fetch("/api/admin/partners", { method: "POST", headers: h, body: JSON.stringify({ phone: l.phone, business_name: l.business_name || l.name, contact_name: l.name }) });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { setError(errorMessage(data)); return; }
     setCreds({ partner_id: data.partner_id, name: l.business_name || l.name });
@@ -75,7 +75,7 @@ export default function AdminPartners({ onExpired }: { onExpired: () => void }) 
         <div className="grid gap-3">
           {leads.map((l) => (
             <div key={l.id} className="card flex flex-wrap items-start justify-between gap-3 p-4 text-sm">
-              <div><p className="font-semibold">{l.business_name || l.name} · {l.name}</p><p className="text-muted">{l.phone}{l.pincode ? ` · ${l.pincode}` : ""}{l.deposit != null ? ` · ₹${l.deposit} deposit/jar` : ""}</p>{l.notes && <p className="italic">“{l.notes}”</p>}</div>
+              <div><p className="font-semibold">{l.business_name || l.name} · {l.name}</p><p className="text-muted">{l.phone}{l.pincode ? ` · ${l.pincode}` : ""}</p>{l.notes && <p className="italic">“{l.notes}”</p>}</div>
               {have.has(l.phone) ? <span className="chip">Partner</span> : <button onClick={() => approve(l)} className="btn btn-primary !px-4 !py-1.5">Make partner</button>}
             </div>
           ))}
@@ -87,7 +87,7 @@ export default function AdminPartners({ onExpired }: { onExpired: () => void }) 
         <div className="grid gap-2 text-sm">
           {partners.map((p) => (
             <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-line py-2">
-              <span>{p.business_name} · {p.phone} · ₹{p.deposit_per_jar} deposit</span>
+              <span>{p.business_name} · {p.phone}</span>
               <span className="flex items-center gap-2"><span className="chip">{p.password_set ? "Password set" : "Not set up yet"}</span><button onClick={() => reset(p)} className="underline">Reset password</button></span>
             </div>
           ))}

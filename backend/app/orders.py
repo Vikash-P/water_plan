@@ -108,7 +108,7 @@ def place_order(order: OrderIn) -> dict:
     if order.listing_id:
         with connect() as conn:
             listing = conn.execute(
-                "SELECT l.*, p.business_name, p.deposit_per_jar FROM listings l JOIN partners p ON p.id = l.partner_id"
+                "SELECT l.*, p.business_name FROM listings l JOIN partners p ON p.id = l.partner_id"
                 " WHERE l.id = ? AND l.status = 'approved' AND p.status = 'active'", (order.listing_id,),
             ).fetchone()
         if not listing:
@@ -132,10 +132,7 @@ def place_order(order: OrderIn) -> dict:
     # Singles and partner products are priced per jar; a pass is bought once and the first jars are delivered now.
     per_jar = listing is not None or product["id"] == "single"
     amount = product["price"] * (order.jars_now if per_jar else 1)
-    per_jar_deposit = catalog.DEPOSIT_PER_JAR
-    if listing is not None and listing["deposit_per_jar"] is not None:
-        per_jar_deposit = listing["deposit_per_jar"]  # each partner sets their own
-    deposit = 0 if order.has_jars else per_jar_deposit * order.jars_now
+    deposit = 0 if order.has_jars else catalog.DEPOSIT_PER_JAR * order.jars_now
 
     with connect() as conn:
         for _ in range(5):  # retry on the (very unlikely) code collision

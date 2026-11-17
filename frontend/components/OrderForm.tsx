@@ -32,7 +32,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
     window.addEventListener("jd-pick", onPick);
     return () => window.removeEventListener("jd-pick", onPick);
   }, []);
-  const deposit = hasJars ? 0 : (listing?.deposit_per_jar ?? catalog.deposit_per_jar) * jars;
+  const deposit = hasJars ? 0 : catalog.deposit_per_jar * jars;
 
   async function checkPin(value: string) {
     setZone(null);

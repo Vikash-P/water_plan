@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS leads (
     pincode TEXT,
     business_name TEXT,
     jars_per_month INTEGER,
-    deposit INTEGER,                 -- partner applications: refundable deposit per jar they charge
     notes TEXT,
     created_at {TS}
 );
@@ -87,8 +86,7 @@ CREATE TABLE IF NOT EXISTS partners (
     setup_code_hash TEXT,               -- one-time code ops hand over so the partner can set a password
     setup_expires BIGINT NOT NULL DEFAULT 0,
     failed_attempts INTEGER NOT NULL DEFAULT 0,
-    locked_until BIGINT NOT NULL DEFAULT 0,
-    deposit_per_jar INTEGER             -- refundable deposit this partner charges per jar; NULL = WaterMart default
+    locked_until BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS listings (
@@ -157,10 +155,9 @@ def connect():
 
 
 _NEW_COLUMNS = {
-    "leads": [("deposit", "INTEGER")],
     "orders": [("listing_id", "INTEGER"), ("partner_id", "INTEGER"), ("product_name", "TEXT")],
     "partners": [("password_hash", "TEXT"), ("setup_code_hash", "TEXT"), ("setup_expires", "BIGINT NOT NULL DEFAULT 0"),
-                 ("failed_attempts", "INTEGER NOT NULL DEFAULT 0"), ("locked_until", "BIGINT NOT NULL DEFAULT 0"), ("deposit_per_jar", "INTEGER")],
+                 ("failed_attempts", "INTEGER NOT NULL DEFAULT 0"), ("locked_until", "BIGINT NOT NULL DEFAULT 0")],
 }
 
 
