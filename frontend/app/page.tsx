@@ -1,5 +1,7 @@
 import Link from "next/link";
 import PincodeChecker from "@/components/PincodeChecker";
+import OrderForm from "@/components/OrderForm";
+import Jar from "@/components/Jar";
 import LeadForm from "@/components/LeadForm";
 import { getCatalog } from "@/lib/api";
 
@@ -30,12 +32,15 @@ export default async function Home() {
               Order on WhatsApp or tap once on the site. A verified rider brings a sealed ISI 20L jar in about 2 hours. Pay once, refill all month.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href="/order" className="btn btn-primary">Order water now</Link>
+              <a href="#order" className="btn btn-primary">Order water now</a>
               <Link href="/track" className="btn border border-line">Track an order</Link>
             </div>
+            <p className="mt-4 inline-block rounded-full bg-brand-soft px-3 py-1 text-sm font-semibold text-brand">No signup needed to order.</p>
             <div className="mt-6 max-w-md"><p className="small mb-2 text-muted">Check if we deliver to you</p><PincodeChecker /></div>
           </div>
-          <div className="phone" aria-label="Example WhatsApp refill conversation">
+          <div className="flex items-end justify-center gap-4">
+          <Jar className="hidden w-28 shrink-0 drop-shadow-xl sm:block" />
+          <div className="phone !mx-0" aria-label="Example WhatsApp refill conversation">
             <div className="phone-head"><i>J</i>JalDrop</div>
             <div className="phone-msgs">
               <div className="bubble me">Refill please<small>9:41</small></div>
@@ -44,7 +49,20 @@ export default async function Home() {
               <div className="bubble">Rider Sunil arrives by 11:40. Your OTP is <b>4821</b>.<small>9:42</small></div>
             </div>
           </div>
+          </div>
         </div>
+      </section>
+
+      <section id="order" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-12">
+        <div className="mb-8 flex items-center gap-5">
+          <Jar className="hidden w-16 shrink-0 sm:block" />
+          <div>
+            <h2 className="title mb-2">Order 20L water jars</h2>
+            <p className="lead">Tell us what and where. We confirm on WhatsApp and deliver in about 2 hours.</p>
+            <p className="mt-2 inline-block rounded-full bg-brand-soft px-3 py-1 text-sm font-semibold text-brand">No signup needed. Order as a guest.</p>
+          </div>
+        </div>
+        <OrderForm catalog={catalog} />
       </section>
 
       <section id="how" className="mx-auto max-w-6xl px-4 py-16">
@@ -66,7 +84,8 @@ export default async function Home() {
           <p className="mt-2 text-muted">Passes are always cheaper per jar. Jar deposit of ₹{catalog.deposit_per_jar} is fully refundable when you return the jar.</p>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {catalog.products.map((p) => (
-              <div key={p.id} className={`card p-6 ${p.highlight ? "!border-brand ring-2 ring-brand" : ""}`}>
+              <div key={p.id} className={`card relative p-6 ${p.highlight ? "!border-brand ring-2 ring-brand" : ""}`}>
+                <Jar className="absolute right-5 top-5 w-10" />
                 <p className="text-sm font-medium text-brand">{p.tagline}</p>
                 <h3 className="mt-1 text-xl font-semibold">{p.name}</h3>
                 <p className="mt-4 text-4xl font-bold">₹{p.price}</p>
