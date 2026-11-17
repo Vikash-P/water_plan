@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import PartnerPortal from "@/components/PartnerPortal";
 
-export const metadata: Metadata = { title: "Partner portal — JalDrop", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Partner portal — WaterMart", robots: { index: false, follow: false } };
 
 export default function PortalPage() {
   return (

@@ -13,6 +13,7 @@
   --card: #ffffff;
   --line: #e0ebe4;
   --material: rgba(255, 255, 255, 0.65);
+  --logo-1: #222222; --logo-2: #7a7a6c; --logo-3: #c2b8a0;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -94,7 +95,7 @@ small, .small { letter-spacing: 0.005em; }
 .rise { animation: rise 500ms var(--ease) both; }
 
 @media (prefers-color-scheme: dark) {
-  :root { --background: #121316; --foreground: #f1efe8; --card: #1b1c20; --line: #2a3a31; --muted: #9db0a5; --material: rgba(18, 19, 22, 0.6); --brand: #4ade80; --brand-dark: #86efac; --brand-soft: #123022; --accent: #22c55e; }
+  :root { --logo-1: #f4f1e8; --logo-2: #c9c3b0; --logo-3: #9a917a; --background: #121316; --foreground: #f1efe8; --card: #1b1c20; --line: #2a3a31; --muted: #9db0a5; --material: rgba(18, 19, 22, 0.6); --brand: #4ade80; --brand-dark: #86efac; --brand-soft: #123022; --accent: #22c55e; }
   .btn-primary { color: #04210f; }
   .field { background: #1b1c20; }
 }

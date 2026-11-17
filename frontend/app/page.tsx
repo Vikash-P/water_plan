@@ -22,11 +22,11 @@ export default async function Home() {
   const [catalog, listings] = await Promise.all([getCatalog(), getListings()]);
   const items: Item[] = [
     ...catalog.products.map((p): Item => ({
-      key: `jd-${p.id}`, name: p.name, seller: "JalDrop", price: p.price, perJar: p.per_jar, kind: p.jars > 1 ? "pass" : "jar",
+      key: `jd-${p.id}`, pick: p.id, name: p.name, seller: "WaterMart", price: p.price, perJar: p.per_jar, kind: p.jars > 1 ? "pass" : "jar",
       partner: false, pincodes: [], badge: p.tagline, note: p.validity_days ? `Valid ${p.validity_days} days` : `${p.jars} jar`,
     })),
     ...listings.map((l): Item => ({
-      key: `l-${l.id}`, name: l.name, seller: l.brand ? `${l.brand} · ${l.partner}` : l.partner, price: l.price, perJar: l.price,
+      key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: l.brand ? `${l.brand} · ${l.partner}` : l.partner, price: l.price, perJar: l.price,
       kind: "jar", partner: true, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
     })),
   ];
@@ -61,7 +61,7 @@ export default async function Home() {
             <p className="mt-2 inline-block rounded-full bg-brand-soft px-3 py-1 text-sm font-semibold text-brand">No signup needed. Order as a guest.</p>
           </div>
         </div>
-        <OrderForm catalog={catalog} />
+        <OrderForm catalog={catalog} listings={listings} />
       </section>
 
       <section id="how" className="mx-auto max-w-6xl px-4 py-16">

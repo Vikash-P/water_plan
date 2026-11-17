@@ -1,4 +1,4 @@
-# JalDrop — 20L water delivery marketplace (Mumbai)
+# WaterMart — 20L water delivery marketplace (Mumbai)
 
 Marketing website + API for a prepaid 20L drinking-water marketplace. Product plan: [docs/PRODUCT_PLAN.md](docs/PRODUCT_PLAN.md).
 

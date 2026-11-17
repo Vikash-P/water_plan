@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import TrackWithCode from "./TrackWithCode";
 
-export const metadata: Metadata = { title: "Track your order — JalDrop" };
+export const metadata: Metadata = { title: "Track your order — WaterMart" };
 
 export default function TrackPage() {
   return (

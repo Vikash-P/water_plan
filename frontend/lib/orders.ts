@@ -4,7 +4,7 @@ export type Order = {
   created_at: string; updated_at: string;
 };
 export type AdminOrder = Order & {
-  id: number; phone: string; pincode: string; notes: string | null; has_jars: boolean; slot_id: string; next_statuses: string[];
+  id: number; partner_name: string | null; phone: string; pincode: string; notes: string | null; has_jars: boolean; slot_id: string; next_statuses: string[];
 };
 
 export const SLOTS = [

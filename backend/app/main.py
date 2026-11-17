@@ -20,7 +20,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="JalDrop API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="WaterMart API", version="0.1.0", lifespan=lifespan)
 app.include_router(orders_router)
 app.include_router(auth_router)
 app.include_router(me_router)

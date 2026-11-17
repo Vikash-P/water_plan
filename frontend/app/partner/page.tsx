@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LeadForm from "@/components/LeadForm";
 
-export const metadata: Metadata = { title: "Become a delivery partner — JalDrop" };
+export const metadata: Metadata = { title: "Become a delivery partner — WaterMart" };
 
 export default function Partner() {
   return (

@@ -1,4 +1,4 @@
-# Deploying JalDrop (Vercel + Supabase)
+# Deploying WaterMart (Vercel + Supabase)
 
 One Vercel project with two services (see `vercel.json`) plus a Supabase Postgres database:
 

@@ -1,4 +1,4 @@
-# JalDrop (working name) — App & Website Plan
+# WaterMart (working name) — App & Website Plan
 ### 20L drinking-water marketplace, Mumbai · Customer orders → partner delivers
 
 Built on *Mumbai_Water_Delivery_Marketplace_Plan.docx*. The original is a good **ops and go-to-market** playbook. What it doesn't have is a **product plan**: what the app and website actually do, who uses them, what gets built when, and how the anti-poaching rules are enforced in software. This document fills that gap and fixes a few numbers that don't add up.

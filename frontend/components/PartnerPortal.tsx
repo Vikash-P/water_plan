@@ -6,6 +6,7 @@ import { errorMessage } from "@/lib/orders";
 
 type L = { id: number; name: string; brand: string | null; size_litres: number; price: number; pincodes: string[]; status: string; review_note: string | null };
 type Me = { business_name: string; contact_name: string; phone: string; listings: L[] };
+type PO = { code: string; status: string; customer: string; product: string | null; jars: number; society: string; tower: string | null; flat: string; zone: string; pincode: string; slot: string; notes: string | null; next_status: string | null };
 type State = { kind: "loading" } | { kind: "out" } | { kind: "denied"; msg: string } | { kind: "in"; me: Me };
 
 const json = { "Content-Type": "application/json" };
@@ -39,7 +40,7 @@ export default function PartnerPortal() {
   }
 
   if (state.kind === "loading") return <p className="text-muted" role="status">Loading…</p>;
-  if (state.kind === "out") return <Login onDone={reload} title="Partner login" intro="Log in with the mobile number JalDrop approved for your business. We send a 6-digit code." footer={false} />;
+  if (state.kind === "out") return <Login onDone={reload} title="Partner login" intro="Log in with the mobile number WaterMart approved for your business. We send a 6-digit code." footer={false} />;
   if (state.kind === "denied") {
     return (
       <div className="card mx-auto max-w-md p-6">
@@ -71,6 +72,8 @@ function Dashboard({ me, reload, logout }: { me: Me; reload: () => void; logout:
         <button onClick={logout} className="btn border border-line !px-4 !py-2 text-sm">Log out</button>
       </div>
 
+      <Orders />
+
       <ListingForm key={editing?.id ?? "new"} initial={editing} onSaved={() => { setEditing(null); reload(); }} onCancel={() => setEditing(null)} />
 
       <section>
@@ -82,8 +85,8 @@ function Dashboard({ me, reload, logout }: { me: Me; reload: () => void; logout:
             <li key={l.id} className="card flex flex-wrap items-center justify-between gap-4 p-4">
               <div className="min-w-0">
                 <p className="font-semibold">{l.name} <span className="font-normal text-muted">· {l.size_litres}L{l.brand ? ` · ${l.brand}` : ""}</span></p>
-                <p className="text-sm text-muted">₹{l.price} per jar · {l.pincodes.length ? `Delivers to ${l.pincodes.join(", ")}` : "All JalDrop areas"}</p>
-                {l.review_note && <p className="mt-1 text-sm italic">Note from JalDrop: “{l.review_note}”</p>}
+                <p className="text-sm text-muted">₹{l.price} per jar · {l.pincodes.length ? `Delivers to ${l.pincodes.join(", ")}` : "All WaterMart areas"}</p>
+                {l.review_note && <p className="mt-1 text-sm italic">Note from WaterMart: “{l.review_note}”</p>}
               </div>
               <div className="flex items-center gap-2">
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${STATUS[l.status]?.cls}`}>{STATUS[l.status]?.label ?? l.status}</span>
@@ -128,12 +131,54 @@ function ListingForm({ initial, onSaved, onCancel }: { initial: L | null; onSave
       <div><label htmlFor="pl-brand" className="small text-muted">Brand (optional)</label><input id="pl-brand" name="brand" defaultValue={initial?.brand ?? ""} className="field mt-1" /></div>
       <div><label htmlFor="pl-size" className="small text-muted">Jar size (litres)</label><input id="pl-size" name="size_litres" type="number" min={1} max={50} required defaultValue={initial?.size_litres ?? 20} className="field mt-1" /></div>
       <div><label htmlFor="pl-price" className="small text-muted">Your price per jar (₹)</label><input id="pl-price" name="price" type="number" min={1} max={5000} required defaultValue={initial?.price} placeholder="58" className="field mt-1" /></div>
-      <div className="sm:col-span-2"><label htmlFor="pl-pins" className="small text-muted">Pincodes you deliver to (comma separated, blank = all JalDrop areas)</label><input id="pl-pins" name="pincodes" defaultValue={initial?.pincodes.join(", ")} placeholder="400053, 400058" className="field mt-1" /></div>
+      <div className="sm:col-span-2"><label htmlFor="pl-pins" className="small text-muted">Pincodes you deliver to (comma separated, blank = all WaterMart areas)</label><input id="pl-pins" name="pincodes" defaultValue={initial?.pincodes.join(", ")} placeholder="400053, 400058" className="field mt-1" /></div>
       {error && <p className="text-sm text-red-600 sm:col-span-2" role="alert">{error}</p>}
       <div className="flex gap-3 sm:col-span-2">
         <button disabled={busy} className="btn btn-primary">{busy ? "Saving…" : initial ? "Save and resubmit" : "Submit for review"}</button>
         {initial && <button type="button" onClick={onCancel} className="btn border border-line">Cancel</button>}
       </div>
     </form>
+  );
+}
+
+const MOVE: Record<string, string> = { out_for_delivery: "Out for delivery", delivered: "Mark delivered" };
+const OSTATUS: Record<string, string> = { requested: "Awaiting WaterMart confirmation", confirmed: "Ready to deliver", out_for_delivery: "Out for delivery", delivered: "Delivered", cancelled: "Cancelled" };
+
+function Orders() {
+  const [orders, setOrders] = useState<PO[] | null>(null);
+  const [error, setError] = useState("");
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/partner/orders").then((r) => (r.ok ? r.json() : null)).catch(() => null).then((d) => { if (alive && d) setOrders(d.orders); });
+    return () => { alive = false; };
+  }, [tick]);
+
+  async function move(o: PO) {
+    setError("");
+    const res = await fetch(`/api/partner/orders/${o.code}`, { method: "PATCH", headers: json, body: JSON.stringify({ status: o.next_status }) });
+    if (res.ok) setTick((t) => t + 1); else setError(errorMessage(await res.json().catch(() => ({}))));
+  }
+
+  if (!orders || orders.length === 0) return null;
+  return (
+    <section>
+      <h2 className="mb-3 text-xl font-bold">Orders for you</h2>
+      {error && <p className="mb-3 text-sm text-red-600" role="alert">{error}</p>}
+      <ul className="grid gap-3">
+        {orders.map((o) => (
+          <li key={o.code} className="card flex flex-wrap items-start justify-between gap-4 p-4 text-sm">
+            <div className="min-w-0">
+              <p><span className="font-mono font-semibold">{o.code}</span> · {OSTATUS[o.status] ?? o.status}</p>
+              <p className="mt-1">{o.jars} × {o.product} for {o.customer}</p>
+              <p className="text-muted">{o.society}{o.tower ? `, ${o.tower}` : ""}, {o.flat} · {o.zone} {o.pincode} · {o.slot}</p>
+              {o.notes && <p className="italic">“{o.notes}”</p>}
+            </div>
+            {o.next_status && <button onClick={() => move(o)} className="btn btn-primary !px-4 !py-1.5">{MOVE[o.next_status]}</button>}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

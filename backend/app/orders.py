@@ -40,7 +40,8 @@ class OrderIn(BaseModel):
     society: str = Field(min_length=2, max_length=120)
     tower: Optional[str] = Field(default=None, max_length=40)
     flat: str = Field(min_length=1, max_length=40)
-    product_id: str
+    product_id: Optional[str] = None
+    listing_id: Optional[int] = Field(default=None, ge=1)
     jars_now: int = Field(default=1, ge=1, le=5)
     has_jars: bool = False
     slot: str
@@ -83,7 +84,7 @@ def _public(row) -> dict:
         "society": row["society"],
         "tower": row["tower"],
         "flat": row["flat"],
-        "product": product["name"] if product else row["product_id"],
+        "product": row["product_name"] or (product["name"] if product else row["product_id"]),
         "jars_now": row["jars_now"],
         "amount": row["amount"],
         "deposit": row["deposit"],
@@ -100,7 +101,21 @@ def create_order(order: OrderIn):
 
 
 def place_order(order: OrderIn) -> dict:
-    product = next((p for p in catalog.PRODUCTS if p["id"] == order.product_id), None)
+    listing = None
+    if order.listing_id:
+        with connect() as conn:
+            listing = conn.execute(
+                "SELECT l.*, p.business_name FROM listings l JOIN partners p ON p.id = l.partner_id"
+                " WHERE l.id = ? AND l.status = 'approved' AND p.status = 'active'", (order.listing_id,),
+            ).fetchone()
+        if not listing:
+            raise HTTPException(422, "This product is no longer available. Please pick another.")
+        pins = [x for x in listing["pincodes"].split(",") if x]
+        if pins and order.pincode not in pins:
+            raise HTTPException(422, f"{listing['business_name']} doesn't deliver to {order.pincode}. Pick another product.")
+        product = {"id": f"listing:{listing['id']}", "name": listing["name"], "price": listing["price"]}
+    else:
+        product = next((p for p in catalog.PRODUCTS if p["id"] == order.product_id), None)
     if not product:
         raise HTTPException(422, "Unknown product")
     if order.slot not in SLOTS:
@@ -111,8 +126,9 @@ def place_order(order: OrderIn) -> dict:
     if zone["status"] != "launching":
         raise HTTPException(422, f"{zone['name']} isn't live yet. Join the waitlist and we'll tell you when it is.")
 
-    # Singles are priced per jar; a pass is bought once and the first jars are delivered now.
-    amount = product["price"] * (order.jars_now if product["id"] == "single" else 1)
+    # Singles and partner products are priced per jar; a pass is bought once and the first jars are delivered now.
+    per_jar = listing is not None or product["id"] == "single"
+    amount = product["price"] * (order.jars_now if per_jar else 1)
     deposit = 0 if order.has_jars else catalog.DEPOSIT_PER_JAR * order.jars_now
 
     with connect() as conn:
@@ -120,11 +136,14 @@ def place_order(order: OrderIn) -> dict:
             code = new_code()
             inserted = conn.execute(
                 "INSERT INTO orders (code, name, phone, pincode, zone, society, tower, flat, product_id,"
-                " jars_now, has_jars, amount, deposit, slot, notes) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                " jars_now, has_jars, amount, deposit, slot, notes, listing_id, partner_id, product_name)"
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                 " ON CONFLICT (code) DO NOTHING RETURNING id",
                 (code, order.name.strip(), order.phone, order.pincode, zone["name"], order.society.strip(),
                  (order.tower or "").strip() or None, order.flat.strip(), product["id"], order.jars_now,
-                 int(order.has_jars), amount, deposit, order.slot, order.notes),
+                 int(order.has_jars), amount, deposit, order.slot, order.notes,
+                 listing["id"] if listing else None, listing["partner_id"] if listing else None,
+                 listing["name"] if listing else None),
             ).fetchone()
             if inserted:
                 break
@@ -175,6 +194,7 @@ def _admin_row(row) -> dict:
     d = _public(row)
     d.update({"id": row["id"], "phone": row["phone"], "pincode": row["pincode"], "notes": row["notes"],
               "has_jars": bool(row["has_jars"]), "slot_id": row["slot"],
+              "partner_name": row["partner_name"] if "partner_name" in row.keys() else None,
               "next_statuses": sorted(TRANSITIONS[row["status"]])})
     return d
 
@@ -182,11 +202,11 @@ def _admin_row(row) -> dict:
 @router.get("/admin/orders")
 def admin_list(status: Optional[str] = None, x_admin_key: Optional[str] = Header(default=None)):
     require_admin(x_admin_key)
-    sql, args = "SELECT * FROM orders", []
+    sql, args = "SELECT o.*, p.business_name AS partner_name FROM orders o LEFT JOIN partners p ON p.id = o.partner_id", []
     if status:
-        sql += " WHERE status = ?"
+        sql += " WHERE o.status = ?"
         args.append(status)
-    sql += " ORDER BY id DESC LIMIT 200"
+    sql += " ORDER BY o.id DESC LIMIT 200"
     with connect() as conn:
         rows = conn.execute(sql, args).fetchall()
     return {"orders": [_admin_row(r) for r in rows]}

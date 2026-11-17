@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import LeadForm from "@/components/LeadForm";
 
-export const metadata: Metadata = { title: "Water for business — JalDrop" };
+export const metadata: Metadata = { title: "Water for business — WaterMart" };
 
 const perks = [
   "Consolidated monthly GST invoice with input tax credit",

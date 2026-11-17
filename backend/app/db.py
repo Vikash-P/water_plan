@@ -37,14 +37,17 @@ CREATE TABLE IF NOT EXISTS orders (
     flat TEXT NOT NULL,
     product_id TEXT NOT NULL,
     jars_now INTEGER NOT NULL,         -- jars delivered with this request
-    has_jars INTEGER NOT NULL,         -- 1 if customer already holds JalDrop jars
+    has_jars INTEGER NOT NULL,         -- 1 if customer already holds WaterMart jars
     amount INTEGER NOT NULL,           -- rupees for the product(s)
     deposit INTEGER NOT NULL,          -- refundable deposit due (rupees)
     slot TEXT NOT NULL,
     notes TEXT,
     status TEXT NOT NULL DEFAULT 'requested',
     created_at {TS},
-    updated_at {TS}
+    updated_at {TS},
+    listing_id INTEGER,                -- set when the customer chose a partner's product
+    partner_id INTEGER,
+    product_name TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_orders_phone ON orders(phone);
 
@@ -140,12 +143,23 @@ def connect():
         raw.close()
 
 
+_ORDER_COLUMNS = [("listing_id", "INTEGER"), ("partner_id", "INTEGER"), ("product_name", "TEXT")]
+
+
 def init_db() -> None:
     with connect() as conn:
         if IS_PG:
             conn.raw.execute(SCHEMA)
+            for col, typ in _ORDER_COLUMNS:
+                conn.raw.execute(f"ALTER TABLE orders ADD COLUMN IF NOT EXISTS {col} {typ}")
         else:
             conn.raw.executescript(SCHEMA)
+            have = {r["name"] for r in conn.raw.execute("PRAGMA table_info(orders)")}
+            for col, typ in _ORDER_COLUMNS:
+                if col not in have:
+                    conn.raw.execute(f"ALTER TABLE orders ADD COLUMN {col} {typ}")
+    with connect() as conn:
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_orders_partner ON orders(partner_id)")
 
 
 def ts(value) -> str:

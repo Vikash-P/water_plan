@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import Jar from "@/components/Jar";
 
 export type Item = {
-  key: string; name: string; seller: string; price: number; perJar: number; note: string;
+  key: string; pick: string; name: string; seller: string; price: number; perJar: number; note: string;
   kind: "pass" | "jar"; partner: boolean; pincodes: string[]; badge?: string;
 };
 
@@ -62,7 +62,7 @@ export default function Browse({ items }: { items: Item[] }) {
                 </div>
                 <p className="mt-1 text-sm text-muted">{i.seller}</p>
                 <p className="mt-3 flex items-center justify-between text-xs text-muted"><span>⏱ ~2 hrs</span><span>{i.note}</span></p>
-                <a href="#order" className="btn btn-primary mt-4 w-full !py-2 text-sm">Order · ₹{i.price}</a>
+                <a href="#order" onClick={() => window.dispatchEvent(new CustomEvent("jd-pick", { detail: i.pick }))} className="btn btn-primary mt-4 w-full !py-2 text-sm">Order · ₹{i.price}</a>
               </div>
             </li>
           ))}

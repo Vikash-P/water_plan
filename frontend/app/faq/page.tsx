@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "FAQ — JalDrop" };
+export const metadata: Metadata = { title: "FAQ — WaterMart" };
 
 const faqs = [
   ["Is the water safe?", "We only work with plants holding valid FSSAI and BIS (ISI) certificates. Jars are sealed with a tamper-proof tag."],

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import AdminBoard from "@/components/AdminBoard";
 
-export const metadata: Metadata = { title: "Orders (ops) — JalDrop", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Orders (ops) — WaterMart", robots: { index: false, follow: false } };
 
 export default function AdminPage() {
   return (

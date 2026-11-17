@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from .auth import current_phone
 from .db import connect
-from .orders import require_admin
+from .orders import SLOTS, require_admin
 from .validators import PIN_RE, normalize_phone
 
 router = APIRouter(prefix="/api")
@@ -25,9 +25,9 @@ def require_partner(jd_session: Optional[str] = Cookie(default=None)) -> dict:
     with connect() as conn:
         p = conn.execute("SELECT * FROM partners WHERE phone = ?", (phone,)).fetchone()
     if not p:
-        raise HTTPException(403, "This number is not a JalDrop partner yet. Apply on the partner page.")
+        raise HTTPException(403, "This number is not a WaterMart partner yet. Apply on the partner page.")
     if p["status"] != "active":
-        raise HTTPException(403, "This partner account is suspended. Contact JalDrop.")
+        raise HTTPException(403, "This partner account is suspended. Contact WaterMart.")
     return dict(p)
 
 
@@ -109,6 +109,42 @@ def delete_listing(listing_id: int, p: dict = Depends(require_partner)):
         if not cur.fetchone():
             raise HTTPException(404, "Listing not found")
     return {"ok": True}
+
+
+# Partners handle the last mile; ops still confirm the order and collect payment.
+PARTNER_MOVES = {"confirmed": "out_for_delivery", "out_for_delivery": "delivered"}
+
+
+def _partner_order(r) -> dict:
+    """What a delivery partner sees. The customer's phone number is deliberately left out."""
+    return {"code": r["code"], "status": r["status"], "customer": r["name"].split()[0], "product": r["product_name"],
+            "jars": r["jars_now"], "society": r["society"], "tower": r["tower"], "flat": r["flat"], "zone": r["zone"],
+            "pincode": r["pincode"], "slot": SLOTS.get(r["slot"], r["slot"]), "notes": r["notes"],
+            "next_status": PARTNER_MOVES.get(r["status"])}
+
+
+@router.get("/partner/orders")
+def partner_orders(p: dict = Depends(require_partner)):
+    with connect() as conn:
+        rows = conn.execute("SELECT * FROM orders WHERE partner_id = ? ORDER BY id DESC LIMIT 100", (p["id"],)).fetchall()
+    return {"orders": [_partner_order(r) for r in rows]}
+
+
+class PartnerStatusIn(BaseModel):
+    status: str
+
+
+@router.patch("/partner/orders/{code}")
+def partner_move_order(code: str, body: PartnerStatusIn, p: dict = Depends(require_partner)):
+    with connect() as conn:
+        row = conn.execute("SELECT * FROM orders WHERE code = ? AND partner_id = ?", (code.upper(), p["id"])).fetchone()
+        if not row:
+            raise HTTPException(404, "Order not found")
+        if PARTNER_MOVES.get(row["status"]) != body.status:
+            raise HTTPException(409, "This order can't move to that status yet. Wait for WaterMart to confirm it.")
+        conn.execute("UPDATE orders SET status=?, updated_at=CURRENT_TIMESTAMP WHERE id=?", (body.status, row["id"]))
+        row = conn.execute("SELECT * FROM orders WHERE id = ?", (row["id"],)).fetchone()
+    return _partner_order(row)
 
 
 # ---- Public ------------------------------------------------------------------

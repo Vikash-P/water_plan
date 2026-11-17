@@ -52,3 +52,36 @@ def test_validation_and_isolation():
         login(c2, "9830033333")
         c2.post("/api/admin/partners", headers=ADMIN, json={"phone": "9830033333", "business_name": "Other Co", "contact_name": "Sam"})
         assert c2.patch("/api/partner/listings/9999", json=L).status_code == 404
+
+
+def test_order_from_partner_listing_and_delivery():
+    ph = "9830044444"
+    order = {"name": "Priya Nair", "phone": "9830055555", "pincode": "400053", "society": "Lokhandwala Heights",
+             "flat": "1202", "jars_now": 2, "slot": "asap"}
+    with TestClient(app) as c:
+        login(c, ph)
+        c.post("/api/admin/partners", headers=ADMIN, json={"phone": ph, "business_name": "Delta Water", "contact_name": "Omar"})
+        lid = c.post("/api/partner/listings", json={**L, "pincodes": "400053"}).json()["id"]
+        # not approved yet, so it can't be ordered
+        assert c.post("/api/orders", json={**order, "listing_id": lid}).status_code == 422
+        c.patch(f"/api/admin/listings/{lid}", headers=ADMIN, json={"status": "approved"})
+        # wrong pincode for this partner
+        assert c.post("/api/orders", json={**order, "listing_id": lid, "pincode": "400058"}).status_code == 422
+        r = c.post("/api/orders", json={**order, "listing_id": lid})
+        assert r.status_code == 201
+        o = r.json()
+        assert o["product"] == "Aqua Pure 20L" and o["amount"] == 116 and o["deposit"] == 700
+        mine = c.get("/api/partner/orders").json()["orders"]
+        assert mine[0]["code"] == o["code"] and "phone" not in mine[0] and mine[0]["next_status"] is None
+        # partner can't jump ahead of ops confirmation
+        assert c.patch(f"/api/partner/orders/{o['code']}", json={"status": "delivered"}).status_code == 409
+        board = c.get("/api/admin/orders", headers=ADMIN).json()["orders"]
+        oid = next(x["id"] for x in board if x["code"] == o["code"])
+        assert next(x for x in board if x["code"] == o["code"])["partner_name"] == "Delta Water"
+        c.patch(f"/api/admin/orders/{oid}", headers=ADMIN, json={"status": "confirmed"})
+        assert c.patch(f"/api/partner/orders/{o['code']}", json={"status": "out_for_delivery"}).json()["status"] == "out_for_delivery"
+        assert c.patch(f"/api/partner/orders/{o['code']}", json={"status": "delivered"}).json()["status"] == "delivered"
+    with TestClient(app) as c2:  # another partner can't touch it
+        login(c2, "9830066666")
+        c2.post("/api/admin/partners", headers=ADMIN, json={"phone": "9830066666", "business_name": "Other Co", "contact_name": "Sam"})
+        assert c2.patch(f"/api/partner/orders/{o['code']}", json={"status": "delivered"}).status_code == 404

@@ -57,7 +57,7 @@ export default function AdminBoard() {
               <p><span className="font-mono font-semibold">{o.code}</span> · <span className="font-medium">{STATUS_LABEL[o.status]}</span> · {o.slot}</p>
               <p className="mt-1">{o.name} · <a className="text-brand" href={`tel:${o.phone}`}>{o.phone}</a></p>
               <p className="text-muted">{o.society}{o.tower ? `, ${o.tower}` : ""}, {o.flat} · {o.zone} {o.pincode}</p>
-              <p className="text-muted">{o.jars_now} × {o.product} · ₹{o.amount} + ₹{o.deposit} deposit = <b className="text-foreground">₹{o.total_due}</b>{o.has_jars ? " · has jars" : ""}</p>
+              <p className="text-muted">{o.jars_now} × {o.product}{o.partner_name ? ` (${o.partner_name})` : ""} · ₹{o.amount} + ₹{o.deposit} deposit = <b className="text-foreground">₹{o.total_due}</b>{o.has_jars ? " · has jars" : ""}</p>
               {o.notes && <p className="mt-1 italic">“{o.notes}”</p>}
             </div>
             <div className="flex gap-2">
