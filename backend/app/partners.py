@@ -20,11 +20,9 @@ from .validators import PIN_RE, normalize_phone
 
 router = APIRouter(prefix="/api")
 MAX_LISTINGS = 30
-SETUP_TTL = 7 * 24 * 3600
 MAX_FAILS = 5
 LOCK_SECONDS = 15 * 60
 PBKDF2_ROUNDS = 600_000
-CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 
 
 def hash_password(password: str) -> str:
@@ -44,20 +42,6 @@ def check_password(password: str, stored: Optional[str]) -> bool:
         return False
 
 
-def _code_hash(code: str) -> str:
-    return hashlib.sha256(code.strip().upper().encode()).hexdigest()
-
-
-def new_setup_code(conn, partner_id: int) -> str:
-    """One-time code (valid 7 days) that lets the partner set their password. Shown to ops once, stored hashed."""
-    code = "".join(secrets.choice(CODE_ALPHABET) for _ in range(8))
-    conn.execute(
-        "UPDATE partners SET setup_code_hash=?, setup_expires=?, failed_attempts=0, locked_until=0 WHERE id=?",
-        (_code_hash(code), int(time.time()) + SETUP_TTL, partner_id),
-    )
-    return code
-
-
 class PasswordIn(BaseModel):
     password: str = Field(min_length=8, max_length=100)
 
@@ -74,7 +58,6 @@ class LoginIn(BaseModel):
 
 class SetupIn(PasswordIn):
     phone: str
-    setup_code: str = Field(min_length=4, max_length=20)
 
     @field_validator("phone")
     @classmethod
@@ -86,7 +69,7 @@ BAD = "Wrong phone number or password."
 
 
 def _guard(conn, p, ok: bool) -> None:
-    """Count failures and lock the account for 15 minutes after 5 wrong tries (shared by login and setup)."""
+    """Count failures and lock the account for 15 minutes after 5 wrong tries."""
     now = int(time.time())
     if ok:
         conn.execute("UPDATE partners SET failed_attempts=0, locked_until=0 WHERE id=?", (p["id"],))
@@ -99,18 +82,15 @@ def _guard(conn, p, ok: bool) -> None:
 
 @router.post("/partner/auth/setup")
 def partner_setup(body: SetupIn, request: Request, response: Response):
-    """First time only: phone (the partner ID) + the setup code from WaterMart + a new password."""
-    now = int(time.time())
+    """First time only: the partner ID (phone WaterMart approved) + a new password. Works once per partner."""
     with connect() as conn:
-        p = conn.execute("SELECT * FROM partners WHERE phone = ?", (body.phone,)).fetchone()
-        if not p or p["locked_until"] > now:
-            raise HTTPException(400, "Wrong phone number or setup code, or the code has expired. Ask WaterMart for a new one.")
-        ok = bool(p["setup_code_hash"]) and p["setup_expires"] > now and hmac.compare_digest(p["setup_code_hash"], _code_hash(body.setup_code))
-        _guard(conn, p, ok)
-        if not ok:
-            raise HTTPException(400, "Wrong phone number or setup code, or the code has expired. Ask WaterMart for a new one.")
-        conn.execute("UPDATE partners SET password_hash=?, setup_code_hash=NULL, setup_expires=0 WHERE id=?",
-                     (hash_password(body.password), p["id"]))
+        # Atomic: only succeeds while no password is set, so two people can't both claim the account.
+        row = conn.execute(
+            "UPDATE partners SET password_hash=? WHERE phone=? AND password_hash IS NULL AND status='active' RETURNING id",
+            (hash_password(body.password), body.phone),
+        ).fetchone()
+    if not row:
+        raise HTTPException(400, "This number can't create a password. It isn't an approved partner, or a password is already set. Ask WaterMart for help.")
     start_session(body.phone, request, response)
     return {"ok": True}
 
@@ -128,7 +108,7 @@ def partner_login(body: LoginIn, request: Request, response: Response):
         ok = check_password(body.password, p["password_hash"])
         _guard(conn, p, ok)
         if not ok:
-            raise HTTPException(401, BAD if p["password_hash"] else "Set your password first using the setup code from WaterMart.")
+            raise HTTPException(401, BAD if p["password_hash"] else "Create your password first (First time? Create your password).")
         if p["status"] != "active":
             raise HTTPException(403, "This partner account is suspended. Contact WaterMart.")
     start_session(body.phone, request, response)
@@ -314,23 +294,22 @@ def admin_add_partner(body: PartnerIn, x_admin_key: Optional[str] = Header(defau
             "INSERT INTO partners (phone, business_name, contact_name) VALUES (?,?,?) RETURNING id",
             (body.phone, body.business_name.strip(), body.contact_name.strip()),
         ).fetchone()
-        code = new_setup_code(conn, row["id"])
-    # The partner ID is their phone number. Hand over the setup code once; it can't be read back later.
-    return {"id": row["id"], "ok": True, "partner_id": body.phone, "setup_code": code}
+    # The partner ID is their phone number; they create their own password on first visit.
+    return {"id": row["id"], "ok": True, "partner_id": body.phone}
 
 
 @router.post("/admin/partners/{partner_id}/reset")
 def admin_reset_partner(partner_id: int, x_admin_key: Optional[str] = Header(default=None)):
-    """Forgotten password: clears it and issues a fresh setup code."""
+    """Forgotten password: clears it so the partner can create a new one, and logs them out."""
     require_admin(x_admin_key)
     with connect() as conn:
         p = conn.execute("SELECT * FROM partners WHERE id = ?", (partner_id,)).fetchone()
         if not p:
             raise HTTPException(404, "Partner not found")
         conn.execute("UPDATE partners SET password_hash=NULL WHERE id=?", (partner_id,))
-        code = new_setup_code(conn, partner_id)
+        conn.execute("UPDATE partners SET failed_attempts=0, locked_until=0 WHERE id=?", (partner_id,))
         conn.execute("DELETE FROM sessions WHERE phone = ?", (p["phone"],))
-    return {"ok": True, "partner_id": p["phone"], "setup_code": code}
+    return {"ok": True, "partner_id": p["phone"]}
 
 
 @router.get("/admin/partners")

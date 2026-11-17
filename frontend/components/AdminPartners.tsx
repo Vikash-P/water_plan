@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { errorMessage } from "@/lib/orders";
 
 type Lead = { id: number; name: string; phone: string; business_name: string | null; pincode: string | null; notes: string | null };
-type Creds = { partner_id: string; setup_code: string; name: string };
+type Creds = { partner_id: string; name: string };
 type Partner = { id: number; phone: string; business_name: string; contact_name: string; status: string; password_set: boolean };
 type Listing = { id: number; name: string; brand: string | null; size_litres: number; price: number; pincodes: string[]; status: string; partner: string };
 
@@ -35,7 +35,7 @@ export default function AdminPartners({ adminKey }: { adminKey: string }) {
     const res = await fetch("/api/admin/partners", { method: "POST", headers: h, body: JSON.stringify({ phone: l.phone, business_name: l.business_name || l.name, contact_name: l.name }) });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { setError(errorMessage(data)); return; }
-    setCreds({ partner_id: data.partner_id, setup_code: data.setup_code, name: l.business_name || l.name });
+    setCreds({ partner_id: data.partner_id, name: l.business_name || l.name });
     load();
   }
   async function reset(p: Partner) {
@@ -43,7 +43,7 @@ export default function AdminPartners({ adminKey }: { adminKey: string }) {
     const res = await fetch(`/api/admin/partners/${p.id}/reset`, { method: "POST", headers: h });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) { setError(errorMessage(data)); return; }
-    setCreds({ partner_id: data.partner_id, setup_code: data.setup_code, name: p.business_name });
+    setCreds({ partner_id: data.partner_id, name: p.business_name });
     load();
   }
   async function review(l: Listing, status: string) {
@@ -88,7 +88,7 @@ export default function AdminPartners({ adminKey }: { adminKey: string }) {
           {partners.map((p) => (
             <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-line py-2">
               <span>{p.business_name} · {p.phone}</span>
-              <span className="flex items-center gap-2"><span className="chip">{p.password_set ? "Password set" : "Waiting for setup"}</span><button onClick={() => reset(p)} className="underline">New setup code</button></span>
+              <span className="flex items-center gap-2"><span className="chip">{p.password_set ? "Password set" : "Not set up yet"}</span><button onClick={() => reset(p)} className="underline">Reset password</button></span>
             </div>
           ))}
           {partners.length === 0 && <p className="text-muted">No partners yet.</p>}
@@ -111,14 +111,14 @@ export default function AdminPartners({ adminKey }: { adminKey: string }) {
 
 function CredsCard({ creds, onClose }: { creds: Creds; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
-  const text = `Hi ${creds.name}, your WaterMart partner account is ready.\nPartner ID: ${creds.partner_id}\nSetup code: ${creds.setup_code}\nOpen ${typeof window !== "undefined" ? window.location.origin : ""}/partner/portal, tap "First time? Create your password", and choose your own password. The code works once and expires in 7 days.`;
+  const text = `Hi ${creds.name}, your WaterMart partner account is approved.\nYour Partner ID: ${creds.partner_id}\nOpen ${typeof window !== "undefined" ? window.location.origin : ""}/partner/portal, tap "First time? Create your password", enter your Partner ID and choose your own password. Please do this today.`;
   async function copy() {
     try { await navigator.clipboard.writeText(text); setCopied(true); } catch { /* user can select the text */ }
   }
   return (
     <div className="card border-brand p-5 ring-2 ring-brand" role="status">
       <h2 className="text-lg font-bold">Send these to {creds.name}</h2>
-      <p className="mt-1 text-sm text-muted">The setup code is shown only now. Copy it and send it to the partner on WhatsApp.</p>
+      <p className="mt-1 text-sm text-muted">Copy this and send it to the partner on WhatsApp. Ask them to create their password soon; until they do, anyone with their number could.</p>
       <pre className="mt-3 whitespace-pre-wrap rounded-lg bg-brand-soft p-3 text-sm">{text}</pre>
       <div className="mt-3 flex gap-2"><button onClick={copy} className="btn btn-primary !px-4 !py-1.5 text-sm">{copied ? "Copied" : "Copy message"}</button><button onClick={onClose} className="btn border border-line !px-4 !py-1.5 text-sm">Done</button></div>
     </div>

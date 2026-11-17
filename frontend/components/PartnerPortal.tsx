@@ -193,7 +193,7 @@ function PartnerLogin({ onDone }: { onDone: () => void }) {
     const phone = String(f.get("phone")).trim();
     const password = String(f.get("password"));
     if (mode === "setup" && password !== f.get("confirm")) { setError("The two passwords don't match."); return; }
-    const body = mode === "login" ? { phone, password } : { phone, setup_code: String(f.get("code")).trim(), password };
+    const body = { phone, password };
     setBusy(true); setError("");
     try {
       const res = await fetch(`/api/partner/auth/${mode}`, { method: "POST", headers: json, body: JSON.stringify(body) });
@@ -208,17 +208,11 @@ function PartnerLogin({ onDone }: { onDone: () => void }) {
     <div className="card mx-auto max-w-md p-6">
       <h1 className="title">{mode === "login" ? "Partner login" : "Create your password"}</h1>
       <p className="lead mt-2">
-        {mode === "login" ? "Your partner ID is the mobile number WaterMart approved for your business." : "Enter the setup code WaterMart sent you and choose a password. You only do this once."}
+        {mode === "login" ? "Your partner ID is the mobile number WaterMart approved for your business." : "Enter your partner ID and choose a password. You only do this once."}
       </p>
       <form key={mode} onSubmit={submit} className="mt-6 grid gap-3">
         <label htmlFor="pp-phone" className="small text-muted">Partner ID (mobile number)</label>
         <input id="pp-phone" name="phone" required inputMode="tel" autoComplete="username" placeholder="10-digit number" className="field" />
-        {mode === "setup" && (
-          <>
-            <label htmlFor="pp-code" className="small text-muted">Setup code</label>
-            <input id="pp-code" name="code" required autoComplete="off" placeholder="8-character code" className="field font-mono uppercase tracking-widest" />
-          </>
-        )}
         <label htmlFor="pp-pass" className="small text-muted">{mode === "login" ? "Password" : "New password (at least 8 characters)"}</label>
         <input id="pp-pass" name="password" type="password" required minLength={mode === "setup" ? 8 : 1} autoComplete={mode === "login" ? "current-password" : "new-password"} className="field" />
         {mode === "setup" && (
@@ -233,7 +227,7 @@ function PartnerLogin({ onDone }: { onDone: () => void }) {
       <button type="button" onClick={() => { setMode(mode === "login" ? "setup" : "login"); setError(""); }} className="small mt-5 text-brand underline">
         {mode === "login" ? "First time? Create your password" : "Already have a password? Log in"}
       </button>
-      {mode === "login" && <p className="small mt-3 text-muted">Forgot your password? Ask WaterMart for a new setup code.</p>}
+      {mode === "login" && <p className="small mt-3 text-muted">Forgot your password? Ask WaterMart to reset it, then use “First time? Create your password”.</p>}
     </div>
   );
 }
