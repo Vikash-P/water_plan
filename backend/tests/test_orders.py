@@ -3,6 +3,7 @@ import tempfile
 
 os.environ["JALDROP_DB"] = os.path.join(tempfile.mkdtemp(), "o.db")
 os.environ["JALDROP_ADMIN_KEY"] = "test-key"
+os.environ["JALDROP_DEV_OTP"] = "1"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
@@ -76,3 +77,17 @@ def test_admin_disabled_without_key(monkeypatch):
     monkeypatch.delenv("JALDROP_ADMIN_KEY")
     with TestClient(app) as c:
         assert c.get("/api/admin/orders", headers=ADMIN).status_code == 503
+
+
+def test_saved_addresses_need_login_and_are_deduplicated():
+    with TestClient(app) as c:
+        assert c.get("/api/me/addresses").status_code == 401  # a phone number alone never reveals an address
+        place(c, phone="9811122233")
+        place(c, phone="9811122233")  # same address again
+        place(c, phone="9811122233", flat="1305")
+        r = c.post("/api/auth/otp/request", json={"phone": "9811122233"})
+        assert r.status_code == 200, r.text
+        code = r.json()["dev_code"]
+        assert c.post("/api/auth/otp/verify", json={"phone": "9811122233", "code": code}).status_code == 200
+        d = c.get("/api/me/addresses").json()
+        assert d["name"] == "Asha Rao" and [a["flat"] for a in d["addresses"]] == ["1305", "1204"]

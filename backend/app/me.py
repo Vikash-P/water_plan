@@ -35,6 +35,23 @@ def me(phone: str = Depends(require_customer)):
     }
 
 
+@router.get("/me/addresses")
+def my_addresses(phone: str = Depends(require_customer)):
+    """Distinct delivery addresses from this customer's past orders, newest first (for one-tap autofill)."""
+    with connect() as conn:
+        rows = conn.execute("SELECT * FROM orders WHERE phone = ? ORDER BY id DESC LIMIT 30", (phone,)).fetchall()
+    seen, out = set(), []
+    for r in rows:
+        key = (r["pincode"], r["society"].lower(), (r["tower"] or "").lower(), r["flat"].lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({"society": r["society"], "tower": r["tower"], "flat": r["flat"], "pincode": r["pincode"]})
+        if len(out) == 5:
+            break
+    return {"phone": phone, "name": rows[0]["name"] if rows else None, "addresses": out}
+
+
 @router.post("/me/refill", status_code=201)
 def refill(body: RefillIn, phone: str = Depends(require_customer)):
     """Repeat the last address as a single-jar order. Jar deposit is skipped: they already hold jars."""

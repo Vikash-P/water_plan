@@ -5,6 +5,9 @@ import type { Catalog, Listing } from "@/lib/api";
 import { SLOTS, errorMessage, type Order } from "@/lib/orders";
 
 type Zone = { status: string; zone: string | null } | null;
+type Addr = { society: string; tower: string | null; flat: string; pincode: string };
+type Saved = { phone: string; name: string | null; addresses: Addr[] };
+const JSON_H = { "Content-Type": "application/json" };
 
 export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog; listings?: Listing[] }) {
   const [product, setProduct] = useState(listings.length > 0 ? `l:${listings[0].id}` : "single");
@@ -16,6 +19,17 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [placed, setPlaced] = useState<Order | null>(null);
+  // Returning customers: tick "I already have jars" -> verify the phone once -> pick a saved address.
+  const [saved, setSaved] = useState<Saved | "login" | null>(null);
+  const [fill, setFill] = useState<{ name?: string; phone?: string; society?: string; tower?: string; flat?: string }>({});
+  const [fillKey, setFillKey] = useState(0);
+  const [picked, setPicked] = useState(-1);
+  const [vPhone, setVPhone] = useState("");
+  const [vCode, setVCode] = useState("");
+  const [vSent, setVSent] = useState(false);
+  const [vHint, setVHint] = useState("");
+  const [vErr, setVErr] = useState("");
+  const [vBusy, setVBusy] = useState(false);
 
   // "single" / "pass10" are WaterMart packs; "l:12" is a partner's listing (priced per jar by the partner).
   const listing = product.startsWith("l:") ? listings.find((l) => `l:${l.id}` === product) : undefined;
@@ -32,6 +46,46 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
     window.addEventListener("jd-pick", onPick);
     return () => window.removeEventListener("jd-pick", onPick);
   }, []);
+
+  async function loadSaved() {
+    try {
+      const r = await fetch("/api/me/addresses");
+      if (!r.ok) { setSaved("login"); return; }
+      const d: Saved = await r.json();
+      setSaved(d);
+      setFill((f) => ({ ...f, name: d.name ?? f.name, phone: d.phone }));
+      setFillKey((k) => k + 1);
+      if (d.addresses.length === 1) chooseAddr(d, 0);
+    } catch { setSaved("login"); }
+  }
+
+  function chooseAddr(d: Saved, i: number) {
+    const a = d.addresses[i];
+    setPicked(i);
+    setFill({ name: d.name ?? undefined, phone: d.phone, society: a.society, tower: a.tower ?? "", flat: a.flat });
+    setFillKey((k) => k + 1);
+    setPin(a.pincode); checkPin(a.pincode);
+  }
+  async function sendCode() {
+    setVBusy(true); setVErr("");
+    try {
+      const r = await fetch("/api/auth/otp/request", { method: "POST", headers: JSON_H, body: JSON.stringify({ phone: vPhone }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { setVErr(errorMessage(d)); return; }
+      setVSent(true); setVHint(d.dev_code ?? "");
+    } catch { setVErr("Couldn't reach the server. Please try again."); } finally { setVBusy(false); }
+  }
+  async function verifyCode() {
+    setVBusy(true); setVErr("");
+    try {
+      const r = await fetch("/api/auth/otp/verify", { method: "POST", headers: JSON_H, body: JSON.stringify({ phone: vPhone, code: vCode }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { setVErr(errorMessage(d)); return; }
+      await loadSaved();
+    } catch { setVErr("Couldn't reach the server. Please try again."); } finally { setVBusy(false); }
+  }
+  const enter = (fn: () => void) => (e: React.KeyboardEvent) => { if (e.key === "Enter") { e.preventDefault(); fn(); } };
+
   const deposit = hasJars ? 0 : (listing?.deposit_per_jar ?? catalog.deposit_per_jar) * jars;
 
   async function checkPin(value: string) {
@@ -119,15 +173,47 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
             </select>
           </label>
           <label className="flex items-center gap-3 text-sm">
-            <input type="checkbox" checked={hasJars} onChange={(e) => setHasJars(e.target.checked)} className="h-5 w-5 accent-[var(--brand)]" />
+            <input type="checkbox" checked={hasJars} onChange={(e) => { setHasJars(e.target.checked); if (e.target.checked && saved === null) loadSaved(); }} className="h-5 w-5 accent-[var(--brand)]" />
             I already have WaterMart jars to swap (no new deposit)
           </label>
+          {hasJars && saved === "login" && (
+            <div className="card grid gap-3 p-4 text-sm">
+              <p className="font-semibold">Welcome back! Enter your number and we’ll fill in your address.</p>
+              {!vSent ? (
+                <div className="flex gap-2">
+                  <input value={vPhone} onChange={(e) => setVPhone(e.target.value)} onKeyDown={enter(sendCode)} inputMode="tel" autoComplete="tel" placeholder="Your 10-digit mobile number" aria-label="Your mobile number" className="field" />
+                  <button type="button" onClick={sendCode} disabled={vBusy || vPhone.length < 10} className="btn btn-primary shrink-0 !px-4">{vBusy ? "Sending…" : "Send code"}</button>
+                </div>
+              ) : (
+                <div className="grid gap-2">
+                  <p className="text-muted">We sent a 6-digit code to {vPhone}.{vHint && <> Dev code: <b>{vHint}</b></>}</p>
+                  <div className="flex gap-2">
+                    <input value={vCode} onChange={(e) => setVCode(e.target.value.replace(/\D/g, "").slice(0, 6))} onKeyDown={enter(verifyCode)} inputMode="numeric" autoComplete="one-time-code" placeholder="6-digit code" aria-label="6-digit code" className="field" />
+                    <button type="button" onClick={verifyCode} disabled={vBusy || vCode.length !== 6} className="btn btn-primary shrink-0 !px-4">{vBusy ? "Checking…" : "Verify"}</button>
+                  </div>
+                </div>
+              )}
+              {vErr && <p className="text-red-600" role="alert">{vErr}</p>}
+              <p className="text-muted">No saved address, or don’t want to verify? Just fill the details below.</p>
+            </div>
+          )}
+          {hasJars && saved && saved !== "login" && saved.addresses.length > 0 && (
+            <div className="grid gap-2 text-sm">
+              <p className="font-semibold">Deliver to a saved address</p>
+              {saved.addresses.map((a, i) => (
+                <button type="button" key={i} onClick={() => chooseAddr(saved, i)} aria-pressed={picked === i}
+                  className={`card p-3 text-left ${picked === i ? "!border-brand ring-2 ring-brand" : ""}`}>
+                  {a.society}{a.tower ? `, ${a.tower}` : ""}, {a.flat} <span className="text-muted">· {a.pincode}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </fieldset>
 
         <fieldset className="grid gap-3">
           <legend className="mb-1 font-semibold">2. Where should we deliver?</legend>
-          <input name="name" required minLength={2} autoComplete="name" placeholder="Your name" className="field" />
-          <input name="phone" required inputMode="tel" autoComplete="tel" placeholder="WhatsApp number (10 digits)" className="field" />
+          <input key={`n${fillKey}`} defaultValue={fill.name} name="name" required minLength={2} autoComplete="name" placeholder="Your name" className="field" />
+          <input key={`p${fillKey}`} defaultValue={fill.phone} name="phone" required inputMode="tel" autoComplete="tel" placeholder="WhatsApp number (10 digits)" className="field" />
           <div>
             <input value={pin} onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 6); setPin(v); checkPin(v); }}
               required inputMode="numeric" pattern="\d{6}" placeholder="Pincode" aria-label="Pincode" className="field" />
@@ -138,10 +224,10 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
               </p>
             )}
           </div>
-          <input name="society" required placeholder="Society / building name" className="field" />
+          <input key={`s${fillKey}`} defaultValue={fill.society} name="society" required placeholder="Society / building name" className="field" />
           <div className="grid grid-cols-2 gap-3">
-            <input name="tower" placeholder="Tower / wing (optional)" className="field" />
-            <input name="flat" required placeholder="Flat number" className="field" />
+            <input key={`t${fillKey}`} defaultValue={fill.tower} name="tower" placeholder="Tower / wing (optional)" className="field" />
+            <input key={`f${fillKey}`} defaultValue={fill.flat} name="flat" required placeholder="Flat number" className="field" />
           </div>
           <textarea name="notes" rows={2} maxLength={500} placeholder="Gate or lift instructions (optional)" className="field" />
         </fieldset>
