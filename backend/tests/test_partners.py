@@ -135,3 +135,18 @@ def test_admin_id_password_login():
         assert c2.get("/api/admin/orders", headers={"X-Admin-Key": "test-key"}).status_code == 200  # scripts still work
         c2.cookies.set("jd_admin", "9999999999.deadbeef")
         assert c2.get("/api/admin/orders").status_code == 401  # forged cookie rejected
+
+
+def test_partner_pincode_counts_as_serviceable_and_orderable():
+    ph = "9830033333"
+    with TestClient(app) as c:
+        assert c.get("/api/serviceability/401203").json()["status"] == "unserved"
+        c.post("/api/admin/partners", headers=ADMIN, json={"phone": ph, "business_name": "Rajput", "contact_name": "Raj"})
+        assert c.post("/api/partner/auth/setup", json={"phone": ph, "password": "longenough1"}).status_code == 200
+        lid = c.post("/api/partner/listings", json={"name": "Rajput Water", "size_litres": 20, "price": 30, "pincodes": "401203"}).json()["id"]
+        assert c.get("/api/serviceability/401203").json()["status"] == "unserved"  # pending, not approved yet
+        c.patch(f"/api/admin/listings/{lid}", headers=ADMIN, json={"status": "approved"})
+        assert c.get("/api/serviceability/401203").json()["status"] == "launching"
+        order = {"name": "Asha Rao", "phone": "9820012345", "pincode": "401203", "society": "Sea View", "flat": "12",
+                 "listing_id": lid, "jars_now": 1, "has_jars": False, "slot": "asap"}
+        assert c.post("/api/orders", json=order).status_code == 201

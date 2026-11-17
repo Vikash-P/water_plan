@@ -76,6 +76,10 @@ def serviceability(pincode: str):
     for zone in catalog.ZONES:
         if pincode in zone["pincodes"]:
             return {"pincode": pincode, "valid": True, "status": zone["status"], "zone": zone["name"]}
+    from .partners import partner_zone
+    pz = partner_zone(pincode)
+    if pz:
+        return {"pincode": pincode, "valid": True, "status": pz["status"], "zone": pz["name"]}
     return {"pincode": pincode, "valid": True, "status": "unserved", "zone": None}
 
 

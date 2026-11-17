@@ -124,6 +124,8 @@ def place_order(order: OrderIn) -> dict:
     if order.slot not in SLOTS:
         raise HTTPException(422, "Unknown delivery slot")
     zone = next((z for z in catalog.ZONES if order.pincode in z["pincodes"]), None)
+    if not zone and listing is not None:  # the partner already confirmed (above) that they deliver to this pincode
+        zone = {"name": f"Pincode {order.pincode}", "status": "launching"}
     if not zone:
         raise HTTPException(422, "We don't deliver to this pincode yet. Join the waitlist instead.")
     if zone["status"] != "launching":

@@ -245,6 +245,18 @@ def partner_move_order(code: str, body: PartnerStatusIn, p: dict = Depends(requi
     return _partner_order(row)
 
 
+def partner_zone(pincode: str) -> Optional[dict]:
+    """A pincode counts as served when an active partner has an approved listing that delivers there."""
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT l.pincodes FROM listings l JOIN partners p ON p.id = l.partner_id"
+            " WHERE l.status = 'approved' AND p.status = 'active'"
+        ).fetchall()
+    if any(pincode in r["pincodes"].split(",") for r in rows):
+        return {"id": f"pin-{pincode}", "name": f"Pincode {pincode}", "areas": [], "pincodes": [pincode], "status": "launching"}
+    return None
+
+
 # ---- Public ------------------------------------------------------------------
 
 @router.get("/listings")
