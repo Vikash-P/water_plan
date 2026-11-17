@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
 import PincodeChecker from "@/components/PincodeChecker";
 import OrderForm from "@/components/OrderForm";
 import Jar from "@/components/Jar";
@@ -18,7 +20,13 @@ const trust = [
   ["Private", "Your phone number is never shared with delivery staff."],
 ];
 
-export default async function Home() {
+// Render per request, never at build time: the build can't reach the API, and it would bake an empty partner list into the page.
+export default function Home() {
+  return <Suspense><HomeContent /></Suspense>;
+}
+
+async function HomeContent() {
+  await connection();
   const [catalog, listings] = await Promise.all([getCatalog(), getListings()]);
   // Once any partner is listed, show only partner products; WaterMart's own packs are the fallback so the page is never empty.
   const own: Item[] = [
