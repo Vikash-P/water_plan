@@ -41,6 +41,7 @@ class LeadIn(BaseModel):
     pincode: Optional[str] = None
     business_name: Optional[str] = Field(default=None, max_length=150)
     jars_per_month: Optional[int] = Field(default=None, ge=1, le=100000)
+    deposit: Optional[int] = Field(default=None, ge=0, le=5000)
     notes: Optional[str] = Field(default=None, max_length=1000)
 
     @field_validator("phone")
@@ -82,10 +83,10 @@ def serviceability(pincode: str):
 def create_lead(lead: LeadIn):
     with connect() as conn:
         cur = conn.execute(
-            "INSERT INTO leads (kind, name, phone, email, pincode, business_name, jars_per_month, notes)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
+            "INSERT INTO leads (kind, name, phone, email, pincode, business_name, jars_per_month, deposit, notes)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id",
             (lead.kind, lead.name.strip(), lead.phone, lead.email, lead.pincode,
-             lead.business_name, lead.jars_per_month, lead.notes),
+             lead.business_name, lead.jars_per_month, lead.deposit, lead.notes),
         )
         lead_id = cur.fetchone()["id"]
     return {"id": lead_id, "ok": True}

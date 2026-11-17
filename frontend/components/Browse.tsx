@@ -4,7 +4,7 @@ import Jar from "@/components/Jar";
 
 export type Item = {
   key: string; pick: string; name: string; seller: string; price: number; perJar: number; note: string;
-  kind: "pass" | "jar"; partner: boolean; pincodes: string[]; badge?: string;
+  kind: "pass" | "jar"; partner: boolean; partnerName?: string; pincodes: string[]; badge?: string;
 };
 
 const CHIPS = [
@@ -53,6 +53,7 @@ export default function Browse({ items }: { items: Item[] }) {
             <li key={i.key} className="group overflow-hidden rounded-2xl border border-line bg-card transition-shadow hover:shadow-lg">
               <div className="relative flex h-40 items-end justify-center bg-gradient-to-b from-sky-100 to-sky-50 dark:from-sky-950 dark:to-background">
                 <Jar className="h-32 transition-transform group-hover:scale-105" />
+                {i.partnerName && <span className="absolute left-3 top-3 max-w-[85%] truncate rounded-md bg-brand px-2 py-1 text-xs font-bold text-white">{i.partnerName}</span>}
                 {i.badge && <span className="absolute left-3 top-3 rounded-md bg-brand px-2 py-1 text-xs font-bold text-white">{i.badge}</span>}
               </div>
               <div className="p-4">

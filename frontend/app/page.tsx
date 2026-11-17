@@ -1,6 +1,8 @@
 import PincodeChecker from "@/components/PincodeChecker";
 import OrderForm from "@/components/OrderForm";
 import Jar from "@/components/Jar";
+import WaterJar from "@/components/WaterJar";
+import Waves from "@/components/Waves";
 import LeadForm from "@/components/LeadForm";
 import Browse, { type Item } from "@/components/Browse";
 import { getCatalog, getListings } from "@/lib/api";
@@ -27,13 +29,13 @@ export default async function Home() {
     })),
     ...listings.map((l): Item => ({
       key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: l.partner === l.name ? "Verified partner" : `by ${l.partner}`, price: l.price, perJar: l.price,
-      kind: "jar", partner: true, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
+      kind: "jar", partner: true, partnerName: l.partner, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
     })),
   ];
   return (
     <>
-      <section id="start" className="bg-gradient-to-b from-brand-soft to-background">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
+      <section id="start" className="relative overflow-hidden bg-gradient-to-b from-brand-soft to-background">
+        <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-12 md:pb-24 md:pt-16">
           <div className="flex items-center gap-6">
             <div className="min-w-0 flex-1">
               <h1 className="display rise">20L water, delivered to your door in <span className="text-brand">2 hours</span>.</h1>
@@ -41,9 +43,10 @@ export default async function Home() {
               <div className="mt-6 max-w-lg"><PincodeChecker /></div>
               <p className="mt-4 inline-block rounded-full bg-card px-3 py-1 text-sm font-semibold text-brand shadow-sm">No signup needed to order.</p>
             </div>
-            <Jar className="hidden h-56 shrink-0 drop-shadow-xl md:block" />
+            <WaterJar className="h-44 w-28 shrink-0 md:h-80 md:w-48" />
           </div>
         </div>
+        <Waves />
       </section>
 
       <section id="pricing" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-10">

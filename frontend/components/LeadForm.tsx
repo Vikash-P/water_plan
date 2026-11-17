@@ -3,8 +3,8 @@ import { useState } from "react";
 
 type Kind = "waitlist" | "b2b" | "partner";
 
-export default function LeadForm({ kind, cta, showBusiness = false, showVolume = false, notesLabel }: {
-  kind: Kind; cta: string; showBusiness?: boolean; showVolume?: boolean; notesLabel?: string;
+export default function LeadForm({ kind, cta, showBusiness = false, showVolume = false, showDeposit = false, notesLabel }: {
+  kind: Kind; cta: string; showBusiness?: boolean; showVolume?: boolean; showDeposit?: boolean; notesLabel?: string;
 }) {
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState("");
@@ -15,6 +15,7 @@ export default function LeadForm({ kind, cta, showBusiness = false, showVolume =
     const body: Record<string, unknown> = { kind };
     for (const [k, v] of f.entries()) if (String(v).trim() !== "") body[k] = String(v).trim();
     if (body.jars_per_month) body.jars_per_month = Number(body.jars_per_month);
+    if (body.deposit) body.deposit = Number(body.deposit);
     setState("sending"); setError("");
     try {
       const res = await fetch("/api/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -44,6 +45,11 @@ export default function LeadForm({ kind, cta, showBusiness = false, showVolume =
       <input name="email" type="email" placeholder="Email (optional)" className={input} />
       <input name="pincode" inputMode="numeric" maxLength={6} pattern="\d{6}" placeholder="Pincode" className={input} />
       {showVolume && <input name="jars_per_month" type="number" min={1} placeholder="Jars needed per month" className={input} />}
+      {showDeposit && (
+        <label className="grid gap-1 text-sm text-muted">Refundable deposit you charge per jar (₹)
+          <input name="deposit" type="number" min={0} max={5000} required inputMode="numeric" placeholder="e.g. 350" className={input} />
+        </label>
+      )}
       {notesLabel && <textarea name="notes" rows={3} placeholder={notesLabel} className={input} />}
       <button disabled={state === "sending"} className="btn btn-primary">
         {state === "sending" ? "Sending…" : cta}
