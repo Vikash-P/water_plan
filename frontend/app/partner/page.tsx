@@ -21,7 +21,7 @@ export default function Partner() {
       </div>
       <div className="card p-6">
         <h2 className="mb-4 text-xl font-semibold">Apply to partner</h2>
-        <LeadForm kind="partner" cta="Apply" showBusiness showVolume notesLabel="Plant location, daily capacity, FSSAI/BIS numbers" />
+        <LeadForm kind="partner" cta="Apply" showBusiness notesLabel="Plant location, daily capacity, FSSAI/BIS numbers" />
       </div>
     </div>
   );
