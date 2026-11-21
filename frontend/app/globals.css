@@ -134,65 +134,6 @@ small, .small { letter-spacing: 0.005em; }
   :root { --line: #5a7384; --muted: #2d4552; }
 }
 
-/* Living jar */
-.jar-stage { position: relative; perspective: 900px; touch-action: pan-y; }
-.jar-stage-tilt { padding: 0 12%; }
-.jar-tilt { position: relative; }
-.jar-stage-tilt .jar-tilt { transform-style: preserve-3d; will-change: transform; }
-.jar-stage-tilt .jar-holder { transform: translateZ(30px); }
-.jar-holder.float { animation: jar-float 4.2s ease-in-out infinite; }
-@keyframes jar-float { 50% { translate: 0 -14px; } }
-.jar-holder .jar-svg { display: block; width: 100%; height: auto; overflow: visible; }
-.jar-holder .jar-svg { filter: drop-shadow(0 18px 24px rgba(16, 70, 140, 0.22)); }
-.hop .jar-svg { animation: jar-hop 0.9s cubic-bezier(0.3, 1.6, 0.5, 1); }
-@keyframes jar-hop { 0% { transform: scale(1, 1); } 15% { transform: scale(1.08, 0.9) translateY(8px); } 45% { transform: scale(0.94, 1.08) translateY(-46px); } 75% { transform: scale(1.04, 0.96); } 100% { transform: none; } }
-.jar-svg .cap { transition: transform 0.55s cubic-bezier(0.3, 1.5, 0.5, 1), opacity 0.3s; }
-.jar-svg.uncapped .cap { transform: translateY(-70px); opacity: 0; }
-.dropw { position: absolute; transform: translateZ(var(--z)); }
-.drop { display: block; width: var(--s); height: var(--s); border-radius: 0 50% 50% 50%; rotate: 45deg;
-  background: radial-gradient(circle at 62% 62%, rgba(255, 255, 255, 0.85) 0 14%, transparent 30%), linear-gradient(135deg, #8fd0ff, #2a7fdc);
-  box-shadow: 0 6px 14px -6px rgba(20, 90, 180, 0.6); animation: drop-bob 3.4s ease-in-out infinite alternate; }
-@keyframes drop-bob { to { translate: 0 -16px; } }
-.jar-shadow { position: absolute; bottom: -10px; left: 50%; width: 85%; height: 20px; translate: -50% 0; background: radial-gradient(closest-side, rgba(11, 37, 64, 0.28), transparent); animation: jar-shad 4.2s ease-in-out infinite; }
-@keyframes jar-shad { 50% { scale: 0.82; opacity: 0.7; } }
-.paused .jar-holder.float, .paused .drop, .paused .jar-shadow { animation-play-state: paused; }
-.shake { animation: field-shake 0.45s ease-in-out; }
-@keyframes field-shake { 20%, 60% { translate: -6px 0; } 40%, 80% { translate: 6px 0; } }
-@media (prefers-reduced-motion: reduce) {
-  .jar-holder.float, .drop, .jar-shadow, .hop .jar-svg, .shake { animation: none; }
-  .jar-svg .cap { transition: none; }
-}
-
-/* Scroll stream */
-.stream { position: absolute; top: 0; left: 0; pointer-events: none; z-index: -1; overflow: hidden; }
-.stream .fb { fill: none; stroke: var(--brand); stroke-opacity: .18; stroke-width: 38; stroke-linecap: round; }
-.stream .fc { fill: none; stroke: #5fb4f5; stroke-width: 16; stroke-linecap: round; }
-.stream .fs { fill: none; stroke: #fff; stroke-opacity: .8; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 14 30; animation: flowdash .6s linear infinite; animation-play-state: paused; }
-.stream.flowing .fs { animation-play-state: running; }
-@keyframes flowdash { to { stroke-dashoffset: -44; } }
-
-/* Order placed: scooter ride */
-.road { position: relative; height: 110px; margin-top: 1.5rem; border-radius: 14px; background: var(--brand-soft); overflow: hidden; }
-.road::after { content: ""; position: absolute; left: 0; right: 0; bottom: 18px; height: 4px;
-  background: repeating-linear-gradient(90deg, var(--line) 0 28px, transparent 28px 52px); animation: lane 0.5s linear 8; /* 4s: stops after the ride */ }
-@keyframes lane { to { background-position: -52px 0; } }
-.scooter { position: absolute; bottom: 20px; left: -140px; width: 130px; z-index: 1; overflow: visible; animation: ride 3.8s cubic-bezier(0.55, 0, 0.5, 1) forwards; }
-@keyframes ride { 0% { left: -140px; } 35% { left: 38%; } 60% { left: 41%; } 100% { left: 105%; } }
-.scooter .bodyg { animation: jig 0.25s ease-in-out 16 alternate; }
-@keyframes jig { to { transform: translateY(-2px); } }
-.scooter .speed { stroke: var(--brand); stroke-width: 3; stroke-linecap: round; opacity: 0.5; }
-.spokes { transform-box: fill-box; transform-origin: center; animation: spin 0.4s linear 10; }
-@keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) {
-  .road::after, .scooter .bodyg, .spokes { animation: none; }
-  .scooter { animation: none; left: 41%; }
-  .scooter .speed { display: none; }
-}
-
-/* Track page rider map */
-.route-bg { fill: none; stroke: var(--line); stroke-width: 6; stroke-dasharray: 2 12; stroke-linecap: round; }
-.route-fg { fill: none; stroke: var(--brand); stroke-width: 6; stroke-linecap: round; }
-.rider-pulse { fill: var(--brand); opacity: 0.25; transform-box: fill-box; transform-origin: center; animation: rider-pulse 1.6s ease-out infinite; }
-@keyframes rider-pulse { 0% { transform: scale(0.6); opacity: 0.45; } 100% { transform: scale(1.8); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .rider-pulse { animation: none; } }
-.paused .rider-pulse { animation-play-state: paused; }
+/* Track scene: the scooter rides along the route to the order's progress (--to); without motion it just sits there */
+.wm-ride { offset-path: path("M80 110 C 140 160, 170 190, 210 220 S 280 270, 300 300"); offset-rotate: 0deg; offset-distance: var(--to, 0%); animation: wmRideTo 1.4s cubic-bezier(0.3, 0.9, 0.3, 1) both; }
+@keyframes wmRideTo { from { offset-distance: 0%; } to { offset-distance: var(--to, 0%); } }
