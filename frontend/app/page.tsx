@@ -59,11 +59,14 @@ export default function Home() {
         <HeroScene />
       </section>
 
-      <section id="pricing" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-10">
-        <h2 className="title mb-1">Order online from top water partners</h2>
-        <Suspense fallback={<><Skeleton className="mb-6 h-6 max-w-xl" /><Skeleton className="h-96" /></>}>
-          <Pricing />
-        </Suspense>
+      <section id="pricing" className="scroll-mt-16 bg-night px-6 py-20 text-white">
+        <div className="mx-auto max-w-[1240px]">
+          <h2 className="title m-0 mb-2">Choose how you refill</h2>
+          <p className="m-0 mb-10 text-lg text-[#C9D6E3]">The pass most homes pick sits forward. Deposit shown separately on every card.</p>
+          <Suspense fallback={<div aria-hidden="true" className="h-96 animate-pulse rounded-3xl bg-[#13304D] motion-reduce:animate-none" />}>
+            <Pricing />
+          </Suspense>
+        </div>
       </section>
 
       <section id="order" className="mx-auto max-w-[1240px] scroll-mt-20 px-6 py-12">
@@ -128,17 +131,14 @@ async function Pricing() {
   const own: Item[] = catalog.products.map((p): Item => ({
     key: `jd-${p.id}`, pick: p.id, name: p.name, seller: "WaterMart", price: p.price, perJar: p.per_jar, kind: p.jars > 1 ? "pass" : "jar",
     partner: false, pincodes: [], badge: p.tagline, note: p.validity_days ? `Valid ${p.validity_days} days` : `${p.jars} jar`,
+    deposit: catalog.deposit_per_jar,
   }));
   const partnerItems: Item[] = listings.map((l): Item => ({
     key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: l.partner === l.name ? "Verified partner" : `by ${l.partner}`, price: l.price, perJar: l.price,
     kind: "jar", partner: true, partnerName: l.partner, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
+    deposit: l.deposit_per_jar ?? catalog.deposit_per_jar,
   }));
-  return (
-    <>
-      <p className="mb-6 text-muted">Jar deposit of ₹{catalog.deposit_per_jar} is fully refundable when you return the jar. Passes are always cheaper per jar.</p>
-      <Browse items={partnerItems.length > 0 ? partnerItems : own} />
-    </>
-  );
+  return <Browse items={partnerItems.length > 0 ? partnerItems : own} />;
 }
 
 /** "Now delivering in …" from the first live zone; hidden when no zone is live. */
