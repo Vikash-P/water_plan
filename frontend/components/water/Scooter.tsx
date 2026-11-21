@@ -8,13 +8,13 @@ export default function Scooter() {
           <rect x="4" y="14" width="22" height="30" rx="6" fill="#a9d3f5" stroke="#4f86bd" strokeWidth="2" />
           <rect x="10" y="6" width="10" height="9" rx="3" fill="#2a6fcf" />
           <path d="M6 50h70l14-22h10l-10 26H18Z" fill="var(--brand)" />
-          <path d="M90 28l8-20" stroke="#0B2540" strokeWidth="4" strokeLinecap="round" />
+          <path d="M90 28l8-20" stroke="var(--foreground)" strokeWidth="4" strokeLinecap="round" />
           <circle cx="62" cy="12" r="8" fill="#F2B48A" />
           <path d="M54 8a8 8 0 0 1 16 0Z" fill="#FFB627" />
-          <path d="M58 20l-6 26M60 26l26 0" stroke="#0B2540" strokeWidth="6" strokeLinecap="round" fill="none" />
+          <path d="M58 20l-6 26M60 26l26 0" stroke="var(--foreground)" strokeWidth="6" strokeLinecap="round" fill="none" />
         </g>
-        <g><circle cx="24" cy="62" r="13" fill="#0B2540" /><g className="spokes"><circle cx="24" cy="62" r="5" fill="#cfe4f7" /><path d="M24 52v20M14 62h20" stroke="#cfe4f7" strokeWidth="2" /></g></g>
-        <g><circle cx="100" cy="62" r="13" fill="#0B2540" /><g className="spokes"><circle cx="100" cy="62" r="5" fill="#cfe4f7" /><path d="M100 52v20M90 62h20" stroke="#cfe4f7" strokeWidth="2" /></g></g>
+        <g><circle cx="24" cy="62" r="13" fill="var(--foreground)" /><g className="spokes"><circle cx="24" cy="62" r="5" fill="#cfe4f7" /><path d="M24 52v20M14 62h20" stroke="#cfe4f7" strokeWidth="2" /></g></g>
+        <g><circle cx="100" cy="62" r="13" fill="var(--foreground)" /><g className="spokes"><circle cx="100" cy="62" r="5" fill="#cfe4f7" /><path d="M100 52v20M90 62h20" stroke="#cfe4f7" strokeWidth="2" /></g></g>
       </svg>
     </div>
   );

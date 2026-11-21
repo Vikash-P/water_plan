@@ -7,7 +7,7 @@ import { burst } from "./Splash";
 
 const noop = () => () => {};
 
-type Geo = { A: Seg; B: Seg; jarX: number; jarY: number; jarVisible: boolean };
+type Geo = { A: Seg; B: Seg; jarX: number; jarY: number };
 
 /** Thick water stream that follows the scroll position down the home page. Anchors: [data-stream="source|jar|end"]. */
 export default function ScrollStream() {
@@ -25,6 +25,7 @@ export default function ScrollStream() {
 
     let geo: Geo | null = null;
     let tip = 0, lastSY = scrollY, unsub: (() => void) | null = null;
+    let flowTimer: ReturnType<typeof setTimeout> | undefined;
     const snapUntil = performance.now() + 1200; // browser scroll restoration lands shortly after mount
 
     const target = () => (geo ? streamTip(scrollY, innerHeight, geo.A.y0, geo.B.y1) : 0);
@@ -51,7 +52,7 @@ export default function ScrollStream() {
       svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
       rect.setAttribute("width", String(W));
       paths.forEach((p) => p.setAttribute("d", A.d + B.d));
-      geo = { A, B, jarX: jx, jarY: jy, jarVisible: visible };
+      geo = { A, B, jarX: jx, jarY: jy };
       tip = geo && performance.now() < snapUntil ? target() : Math.max(A.y0, Math.min(B.y1, tip));
       start();
     };
@@ -85,8 +86,16 @@ export default function ScrollStream() {
       if (Math.abs(tg - tip) < 0.5 && !dv) { tip = tg; rect.setAttribute("height", Math.max(0, tip).toFixed(1)); stop(); }
     };
 
-    function start() { if (!unsub && geo) unsub = subscribe(tick); }
-    function stop() { unsub?.(); unsub = null; }
+    function start() {
+      clearTimeout(flowTimer);
+      svg.classList.add("flowing");
+      if (!unsub && geo) unsub = subscribe(tick);
+    }
+    function stop() {
+      unsub?.(); unsub = null;
+      clearTimeout(flowTimer);
+      flowTimer = setTimeout(() => svg.classList.remove("flowing"), 1200);
+    }
 
     build();
     window.addEventListener("scroll", start, { passive: true });
@@ -96,6 +105,7 @@ export default function ScrollStream() {
     document.fonts?.ready.then(build);
     return () => {
       stop();
+      clearTimeout(flowTimer);
       ro.disconnect();
       window.removeEventListener("scroll", start);
       window.removeEventListener("resize", build);

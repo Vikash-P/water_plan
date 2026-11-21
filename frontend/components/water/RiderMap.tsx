@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { riderProgress } from "@/lib/water/rider.ts";
 import { subscribe } from "@/lib/water/ticker.ts";
 import { burst } from "./Splash";
@@ -18,7 +18,7 @@ export default function RiderMap({ code, status }: { code: string; status: strin
   const rider = useRef<SVGGElement>(null);
   const target = riderProgress(status);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (target === null) return;
     const path = route.current!, fgp = fg.current!, g = rider.current!;
     const len = path.getTotalLength();

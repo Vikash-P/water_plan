@@ -38,10 +38,12 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
   const formRef = useRef<HTMLFormElement>(null);
   const jarRef = useRef<JarApi | null>(null);
   const doneRef = useRef(-1);
+  const placedRef = useRef<HTMLDivElement>(null);
   const [fillInfo, setFillInfo] = useState(() => orderFill({ product: true, name: "", phone: "", pincode: "", society: "", flat: "", slot: true }));
   const onJar = useCallback((api: JarApi) => { jarRef.current = api; doneRef.current = -1; }, []);
   const onPlacedJar = useCallback((api: JarApi) => {
-    // After the success scroll-to-top has settled: close the cap, hop and splash once.
+    // Bring the placed card into view, then (next frame, once the scroll has applied) close the cap, hop and splash once.
+    placedRef.current?.scrollIntoView({ block: "start" });
     requestAnimationFrame(() => {
       api.setCapped(true); api.hop();
       const r = api.el.getBoundingClientRect();
@@ -152,7 +154,6 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setError(errorMessage(data)); return; }
       setPlaced(data);
-      window.scrollTo({ top: 0 });
     } catch {
       setError("Couldn't reach the server. Please check your connection and try again.");
     } finally {
@@ -162,7 +163,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
 
   if (placed) {
     return (
-      <div className="card mx-auto max-w-xl p-8" role="status">
+      <div ref={placedRef} className="card mx-auto max-w-xl scroll-mt-20 p-8" role="status">
         <div className="mx-auto mb-4 w-20"><LivingJar level={1} capped={false} onReady={onPlacedJar} /></div>
         <p className="text-sm font-medium text-brand">Request received</p>
         <h1 className="title mt-1">Thank you, {placed.name.split(" ")[0]}!</h1>

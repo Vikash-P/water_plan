@@ -101,7 +101,7 @@ small, .small { letter-spacing: 0.005em; }
 
 @media (prefers-color-scheme: dark) {
   :root { --logo-1: #f4f1e8; --logo-2: #c9c3b0; --logo-3: #9a917a; --background: #061626; --foreground: #E5F1FB; --card: #0D2136; --line: #1C3853; --muted: #94B1CA; --material: rgba(6, 22, 38, 0.6); --brand: #4DA3FF; --brand-dark: #8CC4FF; --brand-soft: #0F2D4A; --accent: #3A8FDB; }
-  .btn-primary { color: #04121F; }
+  .btn-primary, .btn-accent { color: #04121F; }
   .field { background: #0D2136; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -148,9 +148,10 @@ small, .small { letter-spacing: 0.005em; }
 
 /* Scroll stream */
 .stream { position: absolute; top: 0; left: 0; pointer-events: none; z-index: -1; overflow: hidden; }
-.stream .fb { fill: none; stroke: var(--color-brand, #1c6fd0); stroke-opacity: .18; stroke-width: 38; stroke-linecap: round; }
+.stream .fb { fill: none; stroke: var(--brand); stroke-opacity: .18; stroke-width: 38; stroke-linecap: round; }
 .stream .fc { fill: none; stroke: #5fb4f5; stroke-width: 16; stroke-linecap: round; }
-.stream .fs { fill: none; stroke: #fff; stroke-opacity: .8; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 14 30; animation: flowdash .6s linear infinite; }
+.stream .fs { fill: none; stroke: #fff; stroke-opacity: .8; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 14 30; animation: flowdash .6s linear infinite; animation-play-state: paused; }
+.stream.flowing .fs { animation-play-state: running; }
 @keyframes flowdash { to { stroke-dashoffset: -44; } }
 
 /* Order placed: scooter ride */

@@ -24,7 +24,7 @@ export default function PincodeChecker() {
     const r = inputRef.current?.getBoundingClientRect();
     const origin = r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : undefined;
     window.dispatchEvent(new CustomEvent("watermart:pincode", { detail: { status, origin } }));
-    if (celebrateFor(status) === "shake") setShake(true);
+    if (celebrateFor(status) === "shake" && !matchMedia("(prefers-reduced-motion: reduce)").matches) setShake(true);
   }
 
   async function check(e: React.FormEvent) {
