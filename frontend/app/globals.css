@@ -120,8 +120,9 @@ small, .small { letter-spacing: 0.005em; }
 /* Living jar */
 .jar-stage { position: relative; perspective: 900px; touch-action: pan-y; }
 .jar-stage-tilt { padding: 0 12%; }
-.jar-tilt { position: relative; transform-style: preserve-3d; will-change: transform; }
-.jar-holder { transform: translateZ(30px); }
+.jar-tilt { position: relative; }
+.jar-stage-tilt .jar-tilt { transform-style: preserve-3d; will-change: transform; }
+.jar-stage-tilt .jar-holder { transform: translateZ(30px); }
 .jar-holder.float { animation: jar-float 4.2s ease-in-out infinite; }
 @keyframes jar-float { 50% { translate: 0 -14px; } }
 .jar-holder .jar-svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -139,4 +140,5 @@ small, .small { letter-spacing: 0.005em; }
 @keyframes jar-shad { 50% { scale: 0.82; opacity: 0.7; } }
 @media (prefers-reduced-motion: reduce) {
   .jar-holder.float, .drop, .jar-shadow, .hop .jar-svg { animation: none; }
+  .jar-svg .cap { transition: none; }
 }

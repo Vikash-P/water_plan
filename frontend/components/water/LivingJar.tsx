@@ -104,7 +104,7 @@ export default function LivingJar({
       ty = Math.max(-1, Math.min(1, (e.clientY - r.top - r.height / 2) / (r.height / 1.4)));
       lastMove = performance.now() / 1000;
     };
-    const onWinMove = (e: PointerEvent) => { if (e.pointerType === "mouse") point(e); };
+    const onWinMove = (e: PointerEvent) => { if (unsub && e.pointerType === "mouse") point(e); };
     const onStageMove = (e: PointerEvent) => { if (e.pointerType !== "mouse" && e.buttons) point(e); };
     const opt = { passive: true } as const;
     const listen = tilt && !reduce;
