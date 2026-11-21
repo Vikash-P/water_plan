@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import RiderMap from "@/components/water/RiderMap";
+import { riderProgress } from "@/lib/water/rider.ts";
 import { STATUS_LABEL, STEPS, errorMessage, type Order } from "@/lib/orders";
 
 export default function TrackLookup({ initialCode = "" }: { initialCode?: string }) {
@@ -44,6 +46,7 @@ export default function TrackLookup({ initialCode = "" }: { initialCode?: string
             <h2 className="font-mono text-lg font-semibold">{order.code}</h2>
             <span className="text-sm text-muted">{order.slot}</span>
           </div>
+          {riderProgress(order.status) !== null && <RiderMap status={order.status} />}
           {order.status === "cancelled" ? (
             <p className="mt-4 font-medium text-red-600">This order was cancelled.</p>
           ) : (
