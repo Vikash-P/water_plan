@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
-import Jar from "@/components/Jar";
 import OrderForm from "@/components/OrderForm";
 import { getCatalog, getListings } from "@/lib/api";
 
@@ -11,16 +10,12 @@ export const metadata: Metadata = { title: "Order water — WaterMart", descript
 // and would bake in an empty partner list).
 export default function OrderPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <div className="mb-8 flex items-center gap-5">
-        <Jar className="hidden w-16 shrink-0 sm:block" />
-        <div>
-          <h1 className="title mb-2">Order 20L water jars</h1>
-          <p className="lead">Tell us what and where. We confirm on WhatsApp and deliver in about 2 hours.</p>
-          <p className="mt-2 inline-block rounded-full bg-brand-soft px-3 py-1 text-sm font-semibold text-brand">No signup needed. Order as a guest.</p>
-        </div>
+    <div className="mx-auto max-w-[1240px] px-6 pt-8 lg:py-12">
+      <div className="mb-6">
+        <h1 className="title m-0">Order water</h1>
+        <p className="m-0 mt-1 text-sm text-muted">About 2 hours for ASAP orders · No signup needed</p>
       </div>
-      <Suspense fallback={<div aria-hidden="true" className="h-[36rem] animate-pulse rounded-2xl bg-line/60 motion-reduce:animate-none" />}>
+      <Suspense fallback={<div aria-hidden="true" className="h-[36rem] animate-pulse rounded-3xl bg-line/60 motion-reduce:animate-none" />}>
         <OrderContent />
       </Suspense>
     </div>
