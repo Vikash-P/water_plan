@@ -1,0 +1,746 @@
+<title>JalDrop Motion Concepts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Manrope:wght@600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: water-first hero with a living jar, then three "happy moments" stacked as demo cards */
+:root{
+  --bg:#F2F8FD; --card:#FFFFFF; --ink:#0B2540; --muted:#52708B; --line:#D6E7F4;
+  --brand:#1570D6; --brand-ink:#FFFFFF; --soft:#DDEFFD; --sun:#FFB627; --ok:#0E9A63; --warn:#C46A16;
+  --glow:rgba(255,255,255,.65);
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:22px; --pill:999px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#061626; --card:#0D2136; --ink:#E5F1FB; --muted:#94B1CA; --line:#1C3853;
+  --brand:#4DA3FF; --brand-ink:#04121F; --soft:#0F2D4A; --sun:#FFC24D; --ok:#3CCB8F; --warn:#F0A15A;
+  --glow:rgba(90,170,255,.14); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#061626; --card:#0D2136; --ink:#E5F1FB; --muted:#94B1CA; --line:#1C3853;
+  --brand:#4DA3FF; --brand-ink:#04121F; --soft:#0F2D4A; --sun:#FFC24D; --ok:#3CCB8F; --warn:#F0A15A;
+  --glow:rgba(90,170,255,.14); color-scheme:dark}
+:root[data-style="premium"]{ --display:"Manrope",system-ui,sans-serif; --r:14px; --pill:12px }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;overflow-x:hidden}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800}
+p{margin:0}
+.lead{color:var(--muted);font-size:1.12rem;max-width:34rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.tiny{font-size:.8rem;color:var(--muted)}
+.eyebrow{display:inline-block;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
+.cost{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--muted);font-size:.72rem;font-weight:600;letter-spacing:.02em;text-transform:none}
+
+/* Buttons with water ripple */
+.btn{position:relative;overflow:hidden;border:0;cursor:pointer;font:600 1rem var(--body);padding:.85rem 1.4rem;border-radius:var(--pill);
+  background:var(--brand);color:var(--brand-ink);transition:transform .15s,box-shadow .2s,opacity .2s;box-shadow:0 6px 18px -8px var(--brand)}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn:focus-visible,input:focus-visible,.seg button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.ghost{background:var(--card);color:var(--brand);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.small{padding:.55rem 1rem;font-size:.88rem}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);transform:scale(0);animation:rip .65s ease-out forwards;pointer-events:none}
+.btn.ghost .ripple{background:var(--soft)}
+@keyframes rip{to{transform:scale(1);opacity:0}}
+
+/* Header + style switch */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:18px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:8px;font:800 1.35rem var(--display);color:var(--ink)}
+.seg{display:inline-flex;padding:4px;border-radius:999px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+.seg button{border:0;background:none;color:var(--muted);font:600 .88rem var(--body);padding:.45rem .9rem;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink)}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;background:linear-gradient(180deg,var(--soft),var(--bg));
+  margin-top:calc(-1 * env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px)}
+.hero::before{content:"";position:absolute;inset:-20%;pointer-events:none;
+  background:radial-gradient(28% 20% at 20% 30%,var(--glow),transparent 70%),radial-gradient(22% 18% at 75% 25%,var(--glow),transparent 70%),
+  radial-gradient(30% 22% at 60% 75%,var(--glow),transparent 70%),radial-gradient(18% 14% at 30% 80%,var(--glow),transparent 70%);
+  animation:caustic 14s ease-in-out infinite alternate}
+@keyframes caustic{0%{transform:translate(0,0) rotate(0)}50%{transform:translate(3%,-2%) rotate(4deg)}100%{transform:translate(-3%,2%) rotate(-3deg)}}
+.hero-grid{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center;padding-block:12px 70px}
+.hero-copy{display:grid;gap:18px;min-width:0}
+.chip{justify-self:start;font-size:.82rem;font-weight:600;color:var(--brand);background:var(--card);padding:6px 12px;border-radius:999px;box-shadow:0 2px 10px -4px rgba(21,112,214,.35)}
+.hl{color:var(--brand)}
+:root[data-style="playful"] .hl{color:inherit;background:linear-gradient(transparent 62%,var(--sun) 62%);padding:0 .1em}
+.pin{display:flex;gap:10px;flex-wrap:wrap;max-width:30rem}
+.pin input,.field input{flex:1;min-width:0;font:500 1.05rem var(--body);color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:var(--pill);padding:.8rem 1.1rem;letter-spacing:.04em}
+.pin input{min-width:10rem}
+.msg{min-height:3em;font-weight:500;color:var(--muted)}
+.msg.ok{color:var(--ok)} .msg.warn{color:var(--warn)}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+.stage-wrap{display:grid;gap:10px;justify-items:center;min-width:0}
+.stage{position:relative;width:100%;height:420px;perspective:900px;touch-action:pan-y}
+.tilt{position:absolute;inset:0;transform-style:preserve-3d;display:grid;place-items:center;will-change:transform}
+.jar-holder{width:min(200px,46vw);transform:translateZ(30px)}
+.float{animation:float 4.2s ease-in-out infinite}
+@keyframes float{50%{translate:0 -14px}}
+.jar-svg{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 18px 24px rgba(16,70,140,.22))}
+.hop .jar-svg{animation:hop .9s cubic-bezier(.3,1.6,.5,1)}
+@keyframes hop{0%{transform:scale(1,1)}15%{transform:scale(1.08,.9) translateY(8px)}45%{transform:scale(.94,1.08) translateY(-46px)}75%{transform:scale(1.04,.96)}100%{transform:none}}
+.dropw{position:absolute;transform:translateZ(var(--z))}
+.drop{width:var(--s);height:var(--s);border-radius:0 50% 50% 50%;rotate:45deg;
+  background:radial-gradient(circle at 62% 62%,rgba(255,255,255,.85) 0 14%,transparent 30%),linear-gradient(135deg,#8fd0ff,#2a7fdc);
+  box-shadow:0 6px 14px -6px rgba(20,90,180,.6);animation:bob 3.4s ease-in-out infinite alternate}
+@keyframes bob{to{translate:0 -16px}}
+.shadow{position:absolute;bottom:26px;left:50%;width:190px;height:26px;translate:-50% 0;background:radial-gradient(closest-side,rgba(11,37,64,.28),transparent);animation:shad 4.2s ease-in-out infinite}
+@keyframes shad{50%{scale:.82;opacity:.7}}
+#gl{position:absolute;inset:0;width:100%;height:100%}
+.stage-ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;text-align:center}
+
+/* Jar face */
+.eye{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.happy-eyes{display:none}
+.happy .eyes{display:none} .happy .happy-eyes{display:inline}
+.smile{transform-box:fill-box;transform-origin:center top;transition:transform .3s}
+.happy .smile{transform:scale(1.35,1.6)}
+:root[data-style="premium"] .face{display:none}
+.cap{transition:transform .55s cubic-bezier(.3,1.5,.5,1),opacity .3s}
+.uncapped .cap{transform:translateY(-70px);opacity:0}
+
+.wave-edge{position:absolute;left:0;bottom:-1px;width:200%;height:46px;animation:wave 12s linear infinite}
+.wave-edge path{fill:var(--bg)}
+@keyframes wave{to{transform:translateX(-50%)}}
+
+/* Sections */
+.block{padding-block:56px}
+.sec-head{display:grid;gap:8px;margin-bottom:24px;max-width:40rem}
+.sec-head p{color:var(--muted)}
+.card{background:var(--card);border-radius:var(--r);box-shadow:0 1px 0 var(--line),0 18px 40px -28px rgba(11,37,64,.35);border:1px solid var(--line)}
+
+.order{display:grid;grid-template-columns:1fr 240px;gap:28px;padding:28px;align-items:center}
+.fields{display:grid;gap:16px;min-width:0}
+.field{display:grid;gap:6px}
+.field label,.flabel{font-weight:600;font-size:.9rem}
+.field input{border-radius:12px}
+.done-tick{color:var(--ok);font-weight:700;opacity:0;transition:opacity .2s;margin-left:6px}
+.field.done .done-tick{opacity:1}
+.qty{display:flex;gap:8px;flex-wrap:wrap}
+.qty button{min-width:52px;padding:.6rem .9rem;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:600 1rem var(--body);cursor:pointer;transition:transform .15s}
+.qty button[aria-pressed="true"]{border-color:var(--brand);background:var(--soft);color:var(--brand);transform:translateY(-2px)}
+.order-side{display:grid;justify-items:center;gap:10px}
+.order-side .jar-holder{width:150px;transform:none}
+.fill-label{font-weight:700;text-align:center;font-family:var(--display);font-size:1.1rem}
+.meter{width:150px;height:8px;border-radius:9px;background:var(--soft);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6fc0ff,var(--brand));border-radius:inherit;transition:width .6s cubic-bezier(.3,1.4,.5,1)}
+.status{font-weight:600;color:var(--ok);min-height:1.5em}
+
+.road{grid-column:1/-1;position:relative;height:110px;border-radius:calc(var(--r) - 6px);background:var(--soft);overflow:hidden}
+.road::after{content:"";position:absolute;left:0;right:0;bottom:18px;height:4px;background:repeating-linear-gradient(90deg,var(--line) 0 28px,transparent 28px 52px);animation:lane .5s linear infinite}
+@keyframes lane{to{background-position:-52px 0}}
+.road p{position:absolute;right:16px;top:12px;font-weight:700;color:var(--brand);font-family:var(--display)}
+.scooter{position:absolute;bottom:20px;left:-140px;width:130px;z-index:1}
+.go .scooter{animation:ride 3.8s cubic-bezier(.55,0,.5,1) forwards}
+@keyframes ride{0%{left:-140px}35%{left:38%}60%{left:41%}100%{left:105%}}
+.scooter .bodyg{animation:jig .25s ease-in-out infinite alternate}
+@keyframes jig{to{transform:translateY(-2px)}}
+.spokes{transform-box:fill-box;transform-origin:center;animation:spin .4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.speed{stroke:var(--brand);stroke-width:3;stroke-linecap:round;opacity:.5}
+
+.track{padding:24px;display:grid;grid-template-columns:1fr 260px;gap:24px;align-items:center}
+.map{width:100%;height:auto;display:block}
+.route-bg{fill:none;stroke:var(--line);stroke-width:6;stroke-dasharray:2 12;stroke-linecap:round}
+.route-fg{fill:none;stroke:var(--brand);stroke-width:6;stroke-linecap:round}
+.m-ink{fill:var(--ink)} .m-brand{fill:var(--brand)} .m-card{fill:var(--card)} .m-soft{fill:var(--soft)}
+.pulse{fill:var(--brand);opacity:.25;transform-box:fill-box;transform-origin:center;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.6);opacity:.45}100%{transform:scale(1.8);opacity:0}}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.steps li{display:flex;gap:10px;align-items:center;color:var(--muted);font-weight:500;transition:color .3s}
+.steps li::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid var(--line);flex:none;transition:all .3s}
+.steps li.on{color:var(--ink)}
+.steps li.on::before{background:var(--brand);border-color:var(--brand);box-shadow:0 0 0 4px var(--soft)}
+.eta{font:800 1.5rem var(--display);margin-bottom:12px}
+
+.ship{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.ship div{display:grid;gap:6px}
+.ship h3{font-size:1.15rem}
+.ship p{color:var(--muted);font-size:.95rem}
+footer{padding-block:24px 48px;color:var(--muted);font-size:.85rem}
+
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+#pour{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:49}
+.flow{position:absolute;top:0;left:0;pointer-events:none;z-index:5;overflow:hidden}
+.fb{fill:none;stroke:var(--brand);stroke-opacity:.18;stroke-width:38;stroke-linecap:round}
+.fc{fill:none;stroke:#5fb4f5;stroke-width:16;stroke-linecap:round}
+.fs{fill:none;stroke:#fff;stroke-opacity:.8;stroke-width:4;stroke-linecap:round;stroke-dasharray:14 30;animation:flowdash .6s linear infinite}
+@keyframes flowdash{to{stroke-dashoffset:-44}}
+
+@media (max-width:820px){
+  .hero-grid{grid-template-columns:1fr;padding-bottom:60px}
+  .stage{height:330px}
+  .order,.track{grid-template-columns:1fr}
+  .order-side{order:-1}
+  .ship{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
+}
+</style>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+<canvas id="pour" aria-hidden="true"></canvas>
+<svg id="flow" class="flow" width="0" height="0" aria-hidden="true">
+  <defs><clipPath id="flowClip" clipPathUnits="userSpaceOnUse"><rect id="flowRect" x="0" y="0" width="0" height="0"/></clipPath></defs>
+  <g clip-path="url(#flowClip)"><path class="f fb"/><path class="f fc"/><path class="f fs"/></g>
+  <g id="flowHead" visibility="hidden"><g transform="scale(1.7)"><path d="M0 -17C6 -7 10 -2 10 3A10 10 0 0 1 -10 3C-10 -2 -6 -7 0 -17Z" fill="#3d93ea"/><circle cx="-3.5" cy="2" r="2.6" fill="#fff" fill-opacity=".85"/></g></g>
+</svg>
+
+<section class="hero">
+  <div class="wrap top">
+    <div class="logo">
+      <svg width="26" height="30" viewBox="0 0 26 30" aria-hidden="true"><path d="M13 1C13 1 2 13 2 19a11 11 0 0 0 22 0C24 13 13 1 13 1Z" fill="#2a7fdc"/><path d="M8 19a5 5 0 0 0 5 5" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>
+      JalDrop
+    </div>
+    <div class="seg" role="group" aria-label="Choose a look">
+      <button type="button" data-s="premium" aria-pressed="true">Premium</button>
+      <button type="button" data-s="playful" aria-pressed="false">Playful</button>
+    </div>
+  </div>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="chip">Concept demo · scroll down, the water follows you</span>
+      <h1>Fresh 20L water at your door in <span class="hl">2 hours</span>.</h1>
+      <p class="lead">Pick a brand from verified Mumbai partners. Prepaid, ISI-certified, no signup needed.</p>
+      <form id="pinForm" class="pin" novalidate>
+        <label for="pin" class="sr">Your pincode</label>
+        <input id="pin" inputmode="numeric" maxlength="6" autocomplete="postal-code" value="400053" placeholder="Enter pincode">
+        <button class="btn" type="submit">Check delivery</button>
+      </form>
+      <p id="pinMsg" class="msg" aria-live="polite">Try 400053 (Andheri) for the celebration, or 560001 to see the friendly "not yet".</p>
+    </div>
+    <div class="stage-wrap">
+      <div class="stage" id="stage">
+        <div class="tilt" id="tilt">
+          <span class="dropw" style="--z:90px;left:12%;top:18%"><i class="drop" style="--s:26px"></i></span>
+          <span class="dropw" style="--z:-60px;left:78%;top:12%"><i class="drop" style="--s:16px;animation-delay:-1s"></i></span>
+          <span class="dropw" style="--z:120px;left:82%;top:62%"><i class="drop" style="--s:30px;animation-delay:-2s"></i></span>
+          <span class="dropw" style="--z:-30px;left:8%;top:70%"><i class="drop" style="--s:14px;animation-delay:-.5s"></i></span>
+          <span class="dropw" style="--z:60px;left:64%;top:84%"><i class="drop" style="--s:12px;animation-delay:-1.6s"></i></span>
+          <div class="jar-holder float uncapped" id="heroJar"></div>
+        </div>
+        <div class="shadow" id="heroShadow"></div>
+        <canvas id="gl" hidden></canvas>
+      </div>
+      <div class="stage-ctl">
+        <button class="btn ghost small" type="button" id="glBtn">See the real 3D version</button>
+        <span class="tiny" id="glNote">You're seeing the light version: SVG + CSS, no extra download.</span>
+      </div>
+    </div>
+  </div>
+  <svg class="wave-edge" viewBox="0 0 2880 46" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 26C240 6 480 6 720 26S1200 46 1440 26 1920 6 2160 26 2640 46 2880 26V46H0Z"/>
+  </svg>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Moment 2 · order form <span class="cost">~2 KB</span></span>
+      <h2>The jar fills up as you order</h2>
+      <p>Each finished field adds water. When the jar is full, the order button wakes up. Placing the order caps the jar and sends it off.</p>
+    </div>
+    <div class="card order" id="orderCard">
+      <form id="orderForm" class="fields" novalidate>
+        <div class="field" id="fPhone">
+          <label for="oPhone">WhatsApp number <span class="done-tick">✓</span></label>
+          <input id="oPhone" inputmode="tel" value="98765 43210" autocomplete="tel">
+        </div>
+        <div class="field" id="fAddr">
+          <label for="oAddr">Delivery address <span class="done-tick">✓</span></label>
+          <input id="oAddr" placeholder="Flat, building, street, area" autocomplete="street-address">
+        </div>
+        <div class="field" id="fQty">
+          <span class="flabel" id="qtyLabel">How many jars? <span class="done-tick">✓</span></span>
+          <div class="qty" role="group" aria-labelledby="qtyLabel">
+            <button type="button" data-q="1" aria-pressed="false">1</button>
+            <button type="button" data-q="2" aria-pressed="true">2</button>
+            <button type="button" data-q="3" aria-pressed="false">3</button>
+            <button type="button" data-q="4" aria-pressed="false">4</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn" type="submit" id="placeBtn" disabled>Place order</button>
+          <button class="btn ghost small" type="button" id="resetBtn" hidden>Reset demo</button>
+        </div>
+        <p class="status" id="status" aria-live="polite"></p>
+      </form>
+      <div class="order-side">
+        <div class="jar-holder uncapped" id="orderJar"></div>
+        <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+        <p class="fill-label" id="fillLabel">66% full</p>
+      </div>
+      <div class="road" id="road" hidden>
+        <p>Delivered in ~2 hours</p>
+        <svg class="scooter" viewBox="0 0 130 78" aria-label="Rider on a scooter carrying your jar">
+          <line class="speed" x1="-30" y1="40" x2="-6" y2="40"/><line class="speed" x1="-40" y1="54" x2="-12" y2="54"/>
+          <g class="bodyg">
+            <rect x="4" y="14" width="22" height="30" rx="6" fill="#a9d3f5" stroke="#4f86bd" stroke-width="2"/>
+            <rect x="10" y="6" width="10" height="9" rx="3" fill="#2a6fcf"/>
+            <path d="M6 50h70l14-22h10l-10 26H18Z" class="m-brand"/>
+            <path d="M90 28l8-20" stroke="#0B2540" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="62" cy="12" r="8" fill="#F2B48A"/>
+            <path d="M54 8a8 8 0 0 1 16 0Z" fill="#FFB627"/>
+            <path d="M58 20l-6 26M60 26l26 0" stroke="#0B2540" stroke-width="6" stroke-linecap="round"/>
+          </g>
+          <g><circle cx="24" cy="62" r="13" fill="#0B2540"/><g class="spokes"><circle cx="24" cy="62" r="5" fill="#cfe4f7"/><path d="M24 52v20M14 62h20" stroke="#cfe4f7" stroke-width="2"/></g></g>
+          <g><circle cx="100" cy="62" r="13" fill="#0B2540"/><g class="spokes"><circle cx="100" cy="62" r="5" fill="#cfe4f7"/><path d="M100 52v20M90 62h20" stroke="#cfe4f7" stroke-width="2"/></g></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" style="padding-top:8px">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Moment 3 · tracking <span class="cost">~1 KB</span></span>
+      <h2>Watch your rider come to you</h2>
+      <p>A live route with a pulsing rider, steps that light up, and a splash when the jar arrives.</p>
+    </div>
+    <div class="card track" id="trackCard">
+      <svg class="map" viewBox="0 0 600 220" role="img" aria-label="Rider moving from partner plant to your home">
+        <path id="route" class="route-bg" d="M50 170C170 175 150 50 300 70S440 190 545 60"/>
+        <path id="routeFg" class="route-fg" d="M50 170C170 175 150 50 300 70S440 190 545 60"/>
+        <g transform="translate(26 148)"><rect width="48" height="40" rx="8" class="m-soft"/><path d="M24 8s-10 11-10 17a10 10 0 0 0 20 0c0-6-10-17-10-17Z" class="m-brand"/></g>
+        <text x="50" y="208" text-anchor="middle" class="m-ink" style="font:600 13px var(--body)">Partner plant</text>
+        <g transform="translate(520 22)"><path d="M25 0L52 22H46V48H4V22H-2Z" class="m-brand"/><rect x="18" y="30" width="14" height="18" rx="2" class="m-card"/></g>
+        <text x="545" y="94" text-anchor="middle" class="m-ink" style="font:600 13px var(--body)">You</text>
+        <g id="rider"><circle r="16" class="pulse"/><circle r="15" class="m-brand"/><rect x="-5" y="-8" width="10" height="15" rx="3" fill="#fff"/><rect x="-3" y="-11" width="6" height="4" rx="1" fill="#fff"/></g>
+      </svg>
+      <div>
+        <p class="eta" id="eta">Arriving in 35 min</p>
+        <ol class="steps" id="steps">
+          <li class="on">Order confirmed</li>
+          <li class="on">Sealed jar packed</li>
+          <li class="on">Out for delivery</li>
+          <li>Delivered, share OTP 4821</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" style="padding-top:8px">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">How this stays fast</span>
+      <h2>Delight without a slow site</h2>
+    </div>
+    <div class="ship">
+      <div><h3>Light version first</h3><p>The jar, waves, bubbles and splashes are plain SVG, CSS and a tiny canvas. Under 10 KB added, and the page appears as fast as today.</p></div>
+      <div><h3>Real 3D only where it fits</h3><p>The WebGL jar (about 150 KB) loads after the page is visible, on desktops only. Phones keep the light jar.</p></div>
+      <div><h3>Calm when asked</h3><p>Visitors who turn on "reduce motion" get still images. Animations pause when scrolled off screen.</p></div>
+    </div>
+  </div>
+</section>
+<footer class="wrap">Concept demo for JalDrop. Prices, pincodes and order numbers here are examples.</footer>
+
+<script>
+(() => {
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const root = document.documentElement;
+const $ = (s) => document.querySelector(s);
+
+/* ---------- Look switch ---------- */
+function setStyle(s){
+  root.dataset.style = s;
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === s)));
+  try { localStorage.setItem("jd-style", s); } catch(e){}
+  if (gl3) gl3.setFace(s === "playful");
+}
+let saved = "premium"; try { saved = localStorage.getItem("jd-style") || "premium"; } catch(e){}
+root.dataset.style = saved;
+document.querySelectorAll(".seg button").forEach(b => { b.setAttribute("aria-pressed", String(b.dataset.s === saved)); b.onclick = () => setStyle(b.dataset.s); });
+const playful = () => root.dataset.style === "playful";
+
+/* ---------- Ripple on every button ---------- */
+document.addEventListener("pointerdown", e => {
+  const b = e.target.closest(".btn"); if (!b || b.disabled) return;
+  const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.2, s = document.createElement("span");
+  s.className = "ripple"; s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d/2}px;top:${e.clientY - r.top - d/2}px`;
+  b.appendChild(s); setTimeout(() => s.remove(), 700);
+});
+
+/* ---------- Splash particles ---------- */
+const fx = $("#fx"), ctx = fx.getContext("2d"); let parts = [], fxOn = false;
+function sizeFx(){ const d = Math.min(devicePixelRatio || 1, 2); fx.width = innerWidth * d; fx.height = innerHeight * d; ctx.setTransform(d,0,0,d,0,0); }
+sizeFx(); addEventListener("resize", sizeFx);
+function burst(x, y, n = 46, sc = 1){
+  if (reduce) return;
+  const cols = playful() ? ["#4FB3FF","#1F7BE0","#FFC23D","#FF7AA2","#3FD39A","#8fd0ff"] : ["#BFE3FF","#7cc4ff","#3d93ea","#1F6FC9"];
+  for (let i = 0; i < n; i++){
+    const a = -Math.PI/2 + (Math.random() - .5) * 2.4, sp = (4 + Math.random() * 8) * sc;
+    parts.push({x, y, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp, r: 2.5 + Math.random()*4, life: 1, c: cols[i % cols.length],
+      conf: playful() && Math.random() < .45, rot: Math.random()*6, vr: (Math.random()-.5)*.4});
+  }
+  if (!fxOn){ fxOn = true; requestAnimationFrame(fxLoop); }
+}
+function fxLoop(){
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+  parts = parts.filter(p => p.life > 0 && p.y < innerHeight + 30);
+  for (const p of parts){
+    p.vy += .3; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.life -= .011; p.rot += p.vr;
+    ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.c; ctx.save(); ctx.translate(p.x, p.y);
+    if (p.conf){ ctx.rotate(p.rot); ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r); }
+    else { ctx.rotate(Math.atan2(p.vy, p.vx)); ctx.beginPath(); ctx.ellipse(0, 0, p.r*1.7, p.r, 0, 0, Math.PI*2); ctx.fill(); }
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+  if (parts.length) requestAnimationFrame(fxLoop); else { fxOn = false; ctx.clearRect(0,0,innerWidth,innerHeight); }
+}
+const centerOf = (el, fy = .35) => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height*fy]; };
+
+/* ---------- Living SVG jar ---------- */
+const BODY = "M64 52H96V60C96 74 150 78 150 102V226C150 246 138 258 120 258H40C22 258 10 246 10 226V102C10 78 64 74 64 60Z";
+let uid = 0;
+function jarMarkup(){
+  const i = "j" + (uid++);
+  return `<svg viewBox="0 0 160 262" class="jar-svg" role="img" aria-label="20 litre water jar">
+  <defs>
+    <linearGradient id="${i}g" x1="0" x2="1"><stop offset="0" stop-color="#cfe6fb" stop-opacity=".8"/><stop offset=".45" stop-color="#f2f9ff" stop-opacity=".5"/><stop offset="1" stop-color="#b7d7f4" stop-opacity=".85"/></linearGradient>
+    <linearGradient id="${i}c" x1="0" x2="1"><stop offset="0" stop-color="#2a62b0"/><stop offset=".5" stop-color="#4b8fe2"/><stop offset="1" stop-color="#2a62b0"/></linearGradient>
+    <linearGradient id="${i}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc8ff"/><stop offset="1" stop-color="#1c6fd0"/></linearGradient>
+    <clipPath id="${i}k"><path d="${BODY}"/></clipPath>
+  </defs>
+  <g class="cap"><rect x="58" y="3" width="44" height="30" rx="9" fill="url(#${i}c)"/><rect x="76" y="9" width="8" height="18" rx="3" fill="#fff" fill-opacity=".75"/></g>
+  <rect x="64" y="33" width="32" height="20" fill="#cfe4f7" stroke="#4f86bd" stroke-width="2"/>
+  <path d="${BODY}" fill="url(#${i}g)"/>
+  <g clip-path="url(#${i}k)"><path class="water" fill="url(#${i}w)" fill-opacity=".92"/><path class="surf" fill="none" stroke="#d6efff" stroke-width="3" stroke-linecap="round"/><g class="bub"></g></g>
+  <path d="${BODY}" fill="none" stroke="#4f86bd" stroke-width="2.5" stroke-linejoin="round"/>
+  <g fill="none" stroke="#4f86bd" stroke-width="2.2" stroke-opacity=".75"><path d="M12 104C50 118 110 118 148 104"/><path d="M12 156C50 168 110 168 148 156"/><path d="M12 220C50 232 110 232 148 220"/></g>
+  <path d="M22 110C22 132 25 190 27 224" fill="none" stroke="#fff" stroke-opacity=".65" stroke-width="6" stroke-linecap="round"/>
+  <path d="M40 94C60 98 80 98 100 94" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="4" stroke-linecap="round"/>
+  <g class="face">
+    <g class="eyes" fill="#0B2540"><ellipse class="eye" cx="60" cy="186" rx="6.5" ry="8"/><ellipse class="eye" cx="100" cy="186" rx="6.5" ry="8"/><circle cx="62.5" cy="183" r="2.2" fill="#fff"/><circle cx="102.5" cy="183" r="2.2" fill="#fff"/></g>
+    <g class="happy-eyes" fill="none" stroke="#0B2540" stroke-width="4" stroke-linecap="round"><path d="M53 189Q60 178 67 189"/><path d="M93 189Q100 178 107 189"/></g>
+    <ellipse cx="46" cy="202" rx="8" ry="4.5" fill="#ff8fa3" fill-opacity=".6"/><ellipse cx="114" cy="202" rx="8" ry="4.5" fill="#ff8fa3" fill-opacity=".6"/>
+    <path class="smile" d="M70 202Q80 212 90 202" fill="none" stroke="#0B2540" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+</svg>`;
+}
+const NS = "http://www.w3.org/2000/svg";
+class Jar {
+  constructor(holder, level){
+    holder.innerHTML = jarMarkup();
+    this.holder = holder; this.svg = holder.firstElementChild;
+    this.water = this.svg.querySelector(".water"); this.surf = this.svg.querySelector(".surf");
+    this.level = this.target = level; this.phi = 0; this.v = 0; this.angle = 0; this.visible = true;
+    const g = this.svg.querySelector(".bub");
+    this.bubs = Array.from({length: 8}, () => { const c = document.createElementNS(NS, "circle"); c.setAttribute("fill", "#fff"); c.setAttribute("fill-opacity", ".55"); g.appendChild(c);
+      return {el: c, x: 25 + Math.random()*110, y: 120 + Math.random()*130, r: 1.5 + Math.random()*3, sp: .25 + Math.random()*.5, ph: Math.random()*6}; });
+    new IntersectionObserver(([e]) => this.visible = e.isIntersecting).observe(holder);
+    this.tick(0, 0);
+  }
+  kick(a = .04){ this.v += a; }
+  y(x, t){ const L = 252 - this.level * 172, amp = 1.4 + Math.min(7, Math.abs(this.v) * 140);
+    return L + Math.tan(this.phi) * (x - 80) + amp * (Math.sin(x*.07 + t*2.3) + .5*Math.sin(x*.16 - t*1.7)); }
+  tick(t, dt){
+    const f = dt * 60;
+    this.level += (this.target - this.level) * Math.min(1, dt * 2.5);
+    const tgt = -this.angle * Math.PI / 180;
+    this.v += ((tgt - this.phi) * .05 - this.v * .07) * f; this.phi += this.v * f;
+    let d = "", s = "";
+    for (let x = -10; x <= 170; x += 10){ const y = this.y(x, t).toFixed(1); d += (x < 0 ? "M" : "L") + x + " " + y; s += (x < 0 ? "M" : "L") + x + " " + y; }
+    this.water.setAttribute("d", d + "L170 270L-10 270Z"); this.surf.setAttribute("d", s);
+    for (const b of this.bubs){
+      b.y -= b.sp * f; const bx = b.x + Math.sin(t*3 + b.ph) * 2;
+      if (b.y < this.y(bx, t) + b.r + 2){ b.y = 252; b.x = 25 + Math.random()*110; }
+      b.el.setAttribute("cx", bx.toFixed(1)); b.el.setAttribute("cy", b.y.toFixed(1)); b.el.setAttribute("r", b.r);
+    }
+  }
+}
+const heroJar = new Jar($("#heroJar"), .78);
+const orderJar = new Jar($("#orderJar"), .1);
+const jars = [heroJar, orderJar];
+
+/* ---------- Opening pour: water falls from the top into the jar ---------- */
+const pour = $("#pour"), pctx = pour.getContext("2d");
+function sizePour(){ const d = Math.min(devicePixelRatio || 1, 2); pour.width = innerWidth * d; pour.height = innerHeight * d; pctx.setTransform(d,0,0,d,0,0); }
+sizePour(); addEventListener("resize", sizePour);
+let introT = 0, introDone = reduce, capped = false, hit = false;
+if (reduce){ $("#heroJar").classList.remove("uncapped"); pour.hidden = true; }
+else { heroJar.level = heroJar.target = 0; }
+function drawStream(x, y0, y1, t){
+  const n = Math.max(2, Math.ceil((y1 - y0) / 6)), L = [], R = [];
+  for (let i = 0; i <= n; i++){
+    const y = y0 + (y1 - y0) * i / n, f = i / n;
+    const w = 11 - 3 * f + Math.sin(y * .06 - t * 22) * 1.4, wob = Math.sin(y * .025 + t * 7) * 1.6;
+    L.push([x + wob - w, y]); R.push([x + wob + w, y]);
+  }
+  const g = pctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, "#a8dcff"); g.addColorStop(1, "#2a86e0");
+  pctx.beginPath(); L.forEach(([a, b], i) => i ? pctx.lineTo(a, b) : pctx.moveTo(a, b));
+  for (let i = R.length - 1; i >= 0; i--) pctx.lineTo(R[i][0], R[i][1]);
+  pctx.closePath(); pctx.fillStyle = g; pctx.fill();
+  pctx.beginPath(); L.forEach(([a, b], i) => i ? pctx.lineTo(a + 4, b) : pctx.moveTo(a + 4, b));
+  pctx.strokeStyle = "rgba(255,255,255,.75)"; pctx.lineWidth = 2.4; pctx.stroke();
+}
+function introTick(t, dt){
+  introT += dt; const s = introT;
+  pctx.clearRect(0, 0, innerWidth, innerHeight);
+  const r = heroJar.svg.getBoundingClientRect(), x = r.left + r.width / 2, land = r.top + r.height * (58 / 262);
+  const head = s < .3 ? -30 : -30 + (land + 30) * Math.min(1, ((s - .3) / .45) ** 2);
+  const tail = s < 2.5 ? -30 : -30 + (land + 30) * Math.min(1, ((s - 2.5) / .4) ** 2);
+  if (head > tail + 1) drawStream(x, tail, head, t);
+  if (s > .3 && s < .75){ pctx.beginPath(); pctx.arc(x, head, 12, 0, 7); pctx.fillStyle = "#3d93ea"; pctx.fill(); }
+  if (s > .75 && !hit){ hit = true; heroJar.kick(.05); burst(x, land, 14, .55); }
+  if (s > .75) heroJar.target = .78 * Math.min(1, (s - .75) / 1.8);
+  if (s > .75 && s < 2.85 && Math.random() < .5) burst(x, land, 1, .4);
+  if (s > 3.05 && !capped){ capped = true; $("#heroJar").classList.remove("uncapped"); setTimeout(() => heroJar.kick(.04), 350); }
+  if (s > 3.6){ introDone = true; pctx.clearRect(0, 0, innerWidth, innerHeight); pour.hidden = true; }
+}
+
+/* ---------- Scroll stream: water flows down the page with you ---------- */
+const flow = $("#flow"), flowRect = $("#flowRect"), flowHead = $("#flowHead"), flowPaths = flow.querySelectorAll("path.f");
+let F = null, tip = 0;
+function cubic(x0, y0, x1, y1){
+  const dy = (y1 - y0) * .5, pts = [];
+  for (let i = 0; i <= 60; i++){ const u = i / 60, a = (1-u)**3, b = 3*(1-u)**2*u, c = 3*(1-u)*u*u, d = u**3;
+    pts.push([(a + b) * x0 + (c + d) * x1, a*y0 + b*(y0 + dy) + c*(y1 - dy) + d*y1]); }
+  const k = v => v.toFixed(1);
+  return {d: `M${k(x0)} ${k(y0)}C${k(x0)} ${k(y0 + dy)} ${k(x1)} ${k(y1 - dy)} ${k(x1)} ${k(y1)}`, pts, y0, y1};
+}
+function buildFlow(){
+  const sy = scrollY, R = el => el.getBoundingClientRect();
+  const hero = R($(".hero")), hj = R(heroJar.svg), oj = R(orderJar.svg), os = R($(".order-side")), mp = R($(".map"));
+  const A = cubic(hj.left + hj.width / 2, hero.bottom + sy - 14, oj.left + oj.width / 2, oj.top + sy + oj.height * 40 / 262);
+  const B = cubic(oj.left + oj.width / 2, os.bottom + sy + 8, mp.left + mp.width * 545 / 600, mp.top + sy + mp.height * 20 / 220);
+  const W = root.clientWidth, H = Math.ceil(R($("footer")).bottom + sy);
+  flow.setAttribute("width", W); flow.setAttribute("height", H); flow.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  flowRect.setAttribute("width", W);
+  flowPaths.forEach(p => p.setAttribute("d", A.d + B.d));
+  F = {A, B}; if (!tip) tip = A.y0;
+}
+function xAt(seg, y){
+  const p = seg.pts;
+  for (let i = 1; i < p.length; i++) if (p[i][1] >= y){ const [x0, y0] = p[i-1], [x1, y1] = p[i]; return x0 + (x1 - x0) * ((y - y0) / ((y1 - y0) || 1)); }
+  return p[p.length - 1][0];
+}
+function flowTick(dt){
+  if (!F) return;
+  const {A, B} = F, sy = scrollY;
+  const target = Math.max(A.y0, Math.min(B.y1, sy + innerHeight * .6));
+  const prev = tip; tip += (target - tip) * Math.min(1, dt * 4.5);
+  flowRect.setAttribute("height", Math.max(0, tip).toFixed(1));
+  let x = null;
+  if (tip > A.y0 + 2 && tip < A.y1) x = xAt(A, tip); else if (tip > B.y0 && tip < B.y1 - 2) x = xAt(B, tip);
+  flowHead.setAttribute("visibility", x === null ? "hidden" : "visible");
+  if (x !== null){
+    flowHead.setAttribute("transform", `translate(${x.toFixed(1)} ${tip.toFixed(1)})`);
+    if (Math.abs(target - tip) > 30 && Math.random() < .2) burst(x, tip - sy, 1, .3);
+  }
+  if (prev < A.y1 && tip >= A.y1){ orderJar.kick(.07); const r = orderJar.svg.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height * .2, 16, .6); }
+  if (prev < B.y1 - 2 && tip >= B.y1 - 2) burst(xAt(B, B.y1), B.y1 - sy, 26, .7);
+}
+buildFlow();
+document.fonts && document.fonts.ready.then(buildFlow);
+new ResizeObserver(() => buildFlow()).observe(document.body);
+if (reduce) addEventListener("scroll", () => flowTick(1), {passive: true});
+
+/* ---------- Hero tilt (fake 3D) ---------- */
+const stage = $("#stage"), tilt = $("#tilt");
+let tx = 0, ty = 0, cx = 0, cy = 0, lastMove = -9;
+function point(e){ const r = stage.getBoundingClientRect(); tx = Math.max(-1, Math.min(1, (e.clientX - r.left - r.width/2) / (r.width/1.4)));
+  ty = Math.max(-1, Math.min(1, (e.clientY - r.top - r.height/2) / (r.height/1.4))); lastMove = performance.now()/1000; }
+addEventListener("pointermove", e => { if (e.pointerType === "mouse") point(e); });
+stage.addEventListener("pointerdown", point); stage.addEventListener("pointermove", e => { if (e.pointerType !== "mouse" && e.buttons) point(e); });
+let heroVisible = true; new IntersectionObserver(([e]) => heroVisible = e.isIntersecting).observe(stage);
+function heroTick(t, dt){
+  const idle = t - lastMove > 2.5;
+  const gx = idle ? Math.sin(t*.7) * .45 : tx, gy = idle ? Math.sin(t*.5) * .25 : ty;
+  const k = Math.min(1, dt * 4); cx += (gx - cx) * k; cy += (gy - cy) * k;
+  const rz = -cx * 9;
+  tilt.style.transform = `rotateX(${(-cy*14).toFixed(2)}deg) rotateY(${(cx*26).toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg)`;
+  heroJar.angle = rz;
+}
+
+/* ---------- Tracker ---------- */
+const route = $("#route"), routeFg = $("#routeFg"), rider = $("#rider"), len = route.getTotalLength();
+routeFg.style.strokeDasharray = len;
+const stepsEl = [...document.querySelectorAll("#steps li")], eta = $("#eta");
+let tp = .42, hold = 0, trackVisible = true, arrived = false;
+new IntersectionObserver(([e]) => trackVisible = e.isIntersecting).observe($("#trackCard"));
+function drawTrack(){
+  const pt = route.getPointAtLength(tp * len);
+  rider.setAttribute("transform", `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`);
+  routeFg.style.strokeDashoffset = len * (1 - tp);
+  [0, .12, .25, .995].forEach((th, i) => stepsEl[i].classList.toggle("on", tp >= th));
+  eta.textContent = tp >= .995 ? "Delivered. Enjoy your water!" : `Arriving in ${Math.max(1, Math.round((1 - tp) * 60))} min`;
+}
+function trackTick(dt){
+  if (hold > 0){ hold -= dt; if (hold <= 0){ tp = 0; arrived = false; } drawTrack(); return; }
+  tp = Math.min(1, tp + dt / 16);
+  if (tp >= 1 && !arrived){ arrived = true; hold = 3; const r = $(".map").getBoundingClientRect(); burst(r.left + r.width * .91, r.top + r.height * .2, 30); }
+  drawTrack();
+}
+drawTrack();
+
+/* ---------- Pincode check ---------- */
+const AREAS = {"400053":"Andheri West","400058":"Andheri West","400050":"Bandra West","400076":"Powai","400001":"Fort","400070":"Kurla","400063":"Goregaon East"};
+const pin = $("#pin"), pinMsg = $("#pinMsg");
+pin.addEventListener("input", () => pin.value = pin.value.replace(/\D/g, "").slice(0, 6));
+let happyTimer;
+$("#pinForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const v = pin.value.trim(); pinMsg.className = "msg";
+  const shake = () => { pin.classList.remove("shake"); void pin.offsetWidth; pin.classList.add("shake"); };
+  if (!/^\d{6}$/.test(v)){ pinMsg.textContent = "Enter a 6-digit pincode, like 400053."; shake(); return; }
+  if (v.startsWith("400")){
+    pinMsg.classList.add("ok");
+    pinMsg.textContent = `Yes! We deliver to ${AREAS[v] ? AREAS[v] + " (" + v + ")" : v}. Your first jar can arrive in about 2 hours.`;
+    const holder = $("#heroJar"); holder.classList.remove("hop"); void holder.offsetWidth; holder.classList.add("hop");
+    heroJar.svg.classList.add("happy"); heroJar.kick(.06); if (gl3) gl3.celebrate();
+    clearTimeout(happyTimer); happyTimer = setTimeout(() => heroJar.svg.classList.remove("happy"), 2600);
+    setTimeout(() => { const [x, y] = centerOf(glOn ? stage : holder, .25); burst(x, y, 60); }, 260);
+    const [bx, by] = centerOf(e.submitter || pin, .2); burst(bx, by, 22);
+  } else {
+    pinMsg.classList.add("warn");
+    pinMsg.textContent = `We're not in ${v} yet. Join the waitlist and your first jar is free when we arrive.`;
+    shake();
+  }
+});
+
+/* ---------- Order form fills the jar ---------- */
+const oPhone = $("#oPhone"), oAddr = $("#oAddr"), placeBtn = $("#placeBtn"), fillLabel = $("#fillLabel"), meter = $("#meter"), status = $("#status");
+let qty = 2, lastCount = -1, placed = false;
+function checkOrder(){
+  const ok = [oPhone.value.replace(/\D/g, "").length === 10, oAddr.value.trim().length >= 8, qty > 0];
+  ["#fPhone", "#fAddr", "#fQty"].forEach((s, i) => $(s).classList.toggle("done", ok[i]));
+  const n = ok.filter(Boolean).length, pct = Math.round(n / 3 * 100);
+  orderJar.target = .1 + n / 3 * .8; meter.style.width = pct + "%";
+  if (lastCount >= 0 && n > lastCount) orderJar.kick(.05);
+  lastCount = n;
+  const missing = ["your number", "your address", "how many jars"][ok.indexOf(false)];
+  fillLabel.textContent = n === 3 ? "Full! Ready to go" : `${pct}% full · add ${missing}`;
+  if (!placed) placeBtn.disabled = n < 3;
+}
+oPhone.addEventListener("input", checkOrder); oAddr.addEventListener("input", checkOrder);
+document.querySelectorAll(".qty button").forEach(b => b.onclick = () => {
+  qty = +b.dataset.q; document.querySelectorAll(".qty button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); orderJar.kick(.03); checkOrder();
+});
+$("#orderForm").addEventListener("submit", e => {
+  e.preventDefault(); if (placeBtn.disabled) return;
+  placed = true; placeBtn.disabled = true; placeBtn.textContent = "Order placed ✓";
+  $("#orderJar").classList.remove("uncapped"); orderJar.svg.classList.add("happy"); orderJar.kick(.08);
+  setTimeout(() => { const [x, y] = centerOf($("#orderJar"), .1); burst(x, y, 50); }, 420);
+  status.textContent = `Order JD-4821 confirmed: ${qty} jar${qty > 1 ? "s" : ""}. Your rider is on the way.`;
+  const road = $("#road"); road.hidden = false; road.classList.remove("go"); void road.offsetWidth; road.classList.add("go");
+  $("#resetBtn").hidden = false;
+});
+$("#resetBtn").onclick = () => {
+  placed = false; placeBtn.textContent = "Place order"; status.textContent = ""; $("#road").hidden = true; $("#resetBtn").hidden = true;
+  $("#orderJar").classList.add("uncapped"); orderJar.svg.classList.remove("happy"); oAddr.value = ""; checkOrder(); oAddr.focus();
+};
+checkOrder(); orderJar.level = orderJar.target;
+
+/* ---------- Real 3D (WebGL), loaded only on request ---------- */
+let gl3 = null, glOn = false;
+const glBtn = $("#glBtn"), glNote = $("#glNote"), glCanvas = $("#gl");
+function loadScript(src){ return new Promise((ok, bad) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = bad; document.head.appendChild(s); }); }
+glBtn.onclick = async () => {
+  if (!gl3){
+    glBtn.disabled = true; glBtn.textContent = "Loading 3D…";
+    try { await loadScript("https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"); gl3 = make3D(glCanvas); gl3.setFace(playful()); }
+    catch(err){ glBtn.disabled = false; glBtn.textContent = "See the real 3D version"; glNote.textContent = "The 3D engine didn't load. Check your connection and try again."; return; }
+    glBtn.disabled = false;
+  }
+  glOn = !glOn;
+  glCanvas.hidden = !glOn; tilt.style.visibility = glOn ? "hidden" : "visible"; $("#heroShadow").hidden = glOn;
+  glBtn.textContent = glOn ? "Back to the light version" : "See the real 3D version";
+  glNote.textContent = glOn ? "Real 3D: WebGL glass jar, about 150 KB extra. Move your mouse." : "You're seeing the light version: SVG + CSS, no extra download.";
+};
+function make3D(canvas){
+  const T = THREE, scene = new T.Scene();
+  const cam = new T.PerspectiveCamera(32, 1, .1, 50); cam.position.set(0, 1.45, 6.4); cam.lookAt(0, 1.25, 0);
+  const ren = new T.WebGLRenderer({canvas, antialias: true, alpha: true}); ren.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  ren.outputEncoding = T.sRGBEncoding;
+  scene.add(new T.HemisphereLight(0xffffff, 0x7fa8d6, 1.0));
+  const key = new T.DirectionalLight(0xffffff, 1.3); key.position.set(3, 5, 4); scene.add(key);
+  const rim = new T.PointLight(0x7cc4ff, 1.4, 12); rim.position.set(-3, 2, -2); scene.add(rim);
+  const jar = new T.Group(); scene.add(jar);
+  const V = (r, y) => new T.Vector2(r, y);
+  const shellPts = [[0,.04],[.5,.04],[.64,.08],[.7,.2],[.7,.36],[.675,.4],[.7,.44],[.7,1],[.675,1.04],[.7,1.08],[.7,1.52],[.675,1.56],[.7,1.6],[.69,1.66],[.6,1.86],[.32,1.98],[.17,2.06],[.16,2.1],[.16,2.3]].map(p => V(...p));
+  const shell = new T.Mesh(new T.LatheGeometry(shellPts, 72), new T.MeshPhysicalMaterial({color: 0xcfe8ff, transparent: true, opacity: .34, roughness: .05, clearcoat: 1, clearcoatRoughness: .05, side: T.DoubleSide, depthWrite: false}));
+  shell.renderOrder = 2; jar.add(shell);
+  const waterPts = [[0,.07],[.48,.07],[.62,.11],[.675,.22],[.675,1.42],[0,1.42]].map(p => V(...p));
+  const water = new T.Mesh(new T.LatheGeometry(waterPts, 72), new T.MeshPhysicalMaterial({color: 0x2a8ae6, transparent: true, opacity: .78, roughness: .15, clearcoat: .6}));
+  water.renderOrder = 1; jar.add(water);
+  const surf = new T.Mesh(new T.CircleGeometry(.66, 64), new T.MeshPhysicalMaterial({color: 0x8fd0ff, transparent: true, opacity: .85, roughness: .1, side: T.DoubleSide}));
+  surf.rotation.x = -Math.PI/2; surf.position.y = 1.42; surf.renderOrder = 1; jar.add(surf);
+  const cap = new T.Mesh(new T.CylinderGeometry(.22, .22, .3, 48), new T.MeshStandardMaterial({color: 0x2a6fcf, roughness: .35}));
+  cap.position.y = 2.44; jar.add(cap);
+  const lc = document.createElement("canvas"); lc.width = 1024; lc.height = 256; const g = lc.getContext("2d");
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, 1024, 256); g.fillStyle = "#1570D6"; g.fillRect(0, 0, 1024, 36); g.fillRect(0, 220, 1024, 36);
+  g.fillStyle = "#0B2540"; g.textAlign = "center"; g.font = "800 104px Manrope, sans-serif"; g.fillText("JalDrop", 512, 150);
+  g.font = "600 40px 'Plus Jakarta Sans', sans-serif"; g.fillStyle = "#1570D6"; g.fillText("20 L · ISI SEALED", 512, 200);
+  const tex = new T.CanvasTexture(lc); tex.encoding = T.sRGBEncoding; tex.anisotropy = 4;
+  const arc = Math.PI * .85;
+  const label = new T.Mesh(new T.CylinderGeometry(.708, .708, .48, 72, 1, true, -arc/2, arc), new T.MeshStandardMaterial({map: tex, roughness: .5}));
+  label.position.y = .74; jar.add(label);
+  const face = new T.Group(); const ink = new T.MeshStandardMaterial({color: 0x0B2540, roughness: .4});
+  [-.18, .18].forEach(x => { const e = new T.Mesh(new T.SphereGeometry(.055, 20, 16), ink); e.scale.set(1, 1.25, .5); e.position.set(x, 1.24, .69); face.add(e); });
+  const smile = new T.Mesh(new T.TorusGeometry(.11, .022, 10, 32, Math.PI), ink); smile.rotation.z = Math.PI; smile.position.set(0, 1.13, .7); face.add(smile);
+  const cheekM = new T.MeshStandardMaterial({color: 0xff8fa3, transparent: true, opacity: .6});
+  [-.33, .33].forEach(x => { const c = new T.Mesh(new T.CircleGeometry(.06, 24), cheekM); c.scale.set(1.4, .8, 1); c.position.set(x, 1.12, .64 + .0); c.lookAt(x * 3, 1.12, 3); face.add(c); });
+  jar.add(face);
+  const bubM = new T.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: .55});
+  const bubs = Array.from({length: 16}, () => { const b = new T.Mesh(new T.SphereGeometry(.025 + Math.random()*.025, 10, 8), bubM); b.userData.sp = .25 + Math.random()*.4; reset(b, true); jar.add(b); return b; });
+  function reset(b, any){ const a = Math.random()*6.28, r = Math.random()*.52; b.position.set(Math.cos(a)*r, any ? .1 + Math.random()*1.25 : .12, Math.sin(a)*r); }
+  const sc = document.createElement("canvas"); sc.width = sc.height = 128; const sg = sc.getContext("2d"); const grad = sg.createRadialGradient(64,64,0,64,64,64);
+  grad.addColorStop(0, "rgba(11,37,64,.35)"); grad.addColorStop(1, "rgba(11,37,64,0)"); sg.fillStyle = grad; sg.fillRect(0,0,128,128);
+  const shadow = new T.Mesh(new T.PlaneGeometry(2.2, 2.2), new T.MeshBasicMaterial({map: new T.CanvasTexture(sc), transparent: true, depthWrite: false}));
+  shadow.rotation.x = -Math.PI/2; shadow.position.y = -.12; shadow.scale.set(1, .6, 1); scene.add(shadow);
+  let visible = true, hop = 0, sv = 0, sp = 0, lastRot = 0;
+  new IntersectionObserver(([e]) => visible = e.isIntersecting).observe(canvas);
+  function resize(){ const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return; ren.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+  new ResizeObserver(resize).observe(canvas);
+  return {
+    setFace(on){ face.visible = on; },
+    celebrate(){ hop = 1; sv += .08; },
+    tick(t, dt){
+      if (!visible) return;
+      const f = dt * 60;
+      jar.rotation.y += ((cx * .9 + Math.sin(t*.4) * .15) - jar.rotation.y) * Math.min(1, dt*4);
+      jar.rotation.x += (cy * .18 - jar.rotation.x) * Math.min(1, dt*4);
+      jar.rotation.z = -cx * .12;
+      hop = Math.max(0, hop - dt * 1.3);
+      const bounce = Math.sin((1 - hop) * Math.PI) * hop * .9;
+      jar.position.y = Math.sin(t*1.5) * .06 + bounce;
+      shadow.scale.set(1 - bounce*.4, .6 - bounce*.25, 1);
+      const dz = jar.rotation.z - lastRot; lastRot = jar.rotation.z; sv += -dz * .8;
+      sv += (-sp * .05 - sv * .07) * f; sp += sv * f;
+      surf.rotation.y = 0; surf.rotation.x = -Math.PI/2 + Math.sin(t*2.1) * .02 + sp * .5; surf.rotation.z = -jar.rotation.z * .9;
+      for (const b of bubs){ b.position.y += b.userData.sp * dt; b.position.x += Math.sin(t*3 + b.id) * .0015; if (b.position.y > 1.38) reset(b, false); }
+      if (!canvas.width || canvas.width === 300) resize();
+      ren.render(scene, cam);
+    }
+  };
+}
+
+/* ---------- One shared animation loop, paused off-screen ---------- */
+if (reduce){ drawTrack(); }
+else {
+  let last = performance.now(), lastSY = scrollY;
+  requestAnimationFrame(function frame(now){
+    const dt = Math.min(.05, (now - last) / 1000), t = now / 1000; last = now;
+    if (!introDone) introTick(t, dt);
+    flowTick(dt);
+    const dv = scrollY - lastSY; lastSY = scrollY;
+    if (dv){ const k = Math.max(-.05, Math.min(.05, dv * .0005)); heroJar.kick(k); orderJar.kick(k); }
+    if (heroVisible) heroTick(t, dt);
+    if (heroVisible && glOn && gl3) gl3.tick(t, dt);
+    for (const j of jars) if (j.visible) j.tick(t, dt);
+    if (trackVisible) trackTick(dt);
+    requestAnimationFrame(frame);
+  });
+}
+})();
+</script>
