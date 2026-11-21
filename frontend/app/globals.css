@@ -138,6 +138,7 @@ small, .small { letter-spacing: 0.005em; }
 @keyframes drop-bob { to { translate: 0 -16px; } }
 .jar-shadow { position: absolute; bottom: -10px; left: 50%; width: 85%; height: 20px; translate: -50% 0; background: radial-gradient(closest-side, rgba(11, 37, 64, 0.28), transparent); animation: jar-shad 4.2s ease-in-out infinite; }
 @keyframes jar-shad { 50% { scale: 0.82; opacity: 0.7; } }
+.paused .jar-holder.float, .paused .drop, .paused .jar-shadow { animation-play-state: paused; }
 .shake { animation: field-shake 0.45s ease-in-out; }
 @keyframes field-shake { 20%, 60% { translate: -6px 0; } 40%, 80% { translate: 6px 0; } }
 @media (prefers-reduced-motion: reduce) {
@@ -155,14 +156,14 @@ small, .small { letter-spacing: 0.005em; }
 /* Order placed: scooter ride */
 .road { position: relative; height: 110px; margin-top: 1.5rem; border-radius: 14px; background: var(--brand-soft); overflow: hidden; }
 .road::after { content: ""; position: absolute; left: 0; right: 0; bottom: 18px; height: 4px;
-  background: repeating-linear-gradient(90deg, var(--line) 0 28px, transparent 28px 52px); animation: lane 0.5s linear infinite; }
+  background: repeating-linear-gradient(90deg, var(--line) 0 28px, transparent 28px 52px); animation: lane 0.5s linear 8; /* 4s: stops after the ride */ }
 @keyframes lane { to { background-position: -52px 0; } }
 .scooter { position: absolute; bottom: 20px; left: -140px; width: 130px; z-index: 1; overflow: visible; animation: ride 3.8s cubic-bezier(0.55, 0, 0.5, 1) forwards; }
 @keyframes ride { 0% { left: -140px; } 35% { left: 38%; } 60% { left: 41%; } 100% { left: 105%; } }
-.scooter .bodyg { animation: jig 0.25s ease-in-out infinite alternate; }
+.scooter .bodyg { animation: jig 0.25s ease-in-out 16 alternate; }
 @keyframes jig { to { transform: translateY(-2px); } }
 .scooter .speed { stroke: var(--brand); stroke-width: 3; stroke-linecap: round; opacity: 0.5; }
-.spokes { transform-box: fill-box; transform-origin: center; animation: spin 0.4s linear infinite; }
+.spokes { transform-box: fill-box; transform-origin: center; animation: spin 0.4s linear 10; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) {
   .road::after, .scooter .bodyg, .spokes { animation: none; }

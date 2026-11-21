@@ -90,6 +90,7 @@ export default function LivingJar({
     let io: IntersectionObserver | null = null;
     if (!reduce) {
       io = new IntersectionObserver(([e]) => {
+        stageRef.current?.classList.toggle("paused", !e.isIntersecting); // CSS float/drops too
         if (e.isIntersecting && !unsub) unsub = subscribe(tick);
         else if (!e.isIntersecting && unsub) { unsub(); unsub = null; }
       });
