@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, cache } from "react";
 import { connection } from "next/server";
 import PincodeChecker from "@/components/PincodeChecker";
 import OrderForm from "@/components/OrderForm";
@@ -20,28 +20,20 @@ const trust = [
   ["Private", "Your phone number is never shared with delivery staff."],
 ];
 
-// Render per request, never at build time: the build can't reach the API, and it would bake an empty partner list into the page.
-export default function Home() {
-  return <Suspense><HomeContent /></Suspense>;
+// Only the parts that need API data wait for it; everything else is in the instant static shell.
+// Data is read per request, never at build time: the build can't reach the API and would bake in an empty partner list.
+// cache(): the sections below share one fetch per request.
+const loadData = cache(async () => {
+  await connection();
+  return Promise.all([getCatalog(), getListings()]);
+});
+
+/** Placeholder with the final block's rough height, so streamed content doesn't push the page around. */
+function Skeleton({ className }: { className: string }) {
+  return <div aria-hidden="true" className={`animate-pulse rounded-2xl motion-reduce:animate-none bg-line/60 ${className}`} />;
 }
 
-async function HomeContent() {
-  await connection();
-  const [catalog, listings] = await Promise.all([getCatalog(), getListings()]);
-  // Once any partner is listed, show only partner products; WaterMart's own packs are the fallback so the page is never empty.
-  const own: Item[] = [
-    ...catalog.products.map((p): Item => ({
-      key: `jd-${p.id}`, pick: p.id, name: p.name, seller: "WaterMart", price: p.price, perJar: p.per_jar, kind: p.jars > 1 ? "pass" : "jar",
-      partner: false, pincodes: [], badge: p.tagline, note: p.validity_days ? `Valid ${p.validity_days} days` : `${p.jars} jar`,
-    })),
-  ];
-  const partnerItems: Item[] = [
-    ...listings.map((l): Item => ({
-      key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: l.partner === l.name ? "Verified partner" : `by ${l.partner}`, price: l.price, perJar: l.price,
-      kind: "jar", partner: true, partnerName: l.partner, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
-    })),
-  ];
-  const items = partnerItems.length > 0 ? partnerItems : own;
+export default function Home() {
   return (
     <>
       <section id="start" className="bg-gradient-to-b from-brand-soft to-background">
@@ -60,8 +52,9 @@ async function HomeContent() {
 
       <section id="pricing" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-10">
         <h2 className="title mb-1">Order online from top water partners</h2>
-        <p className="mb-6 text-muted">Jar deposit of ₹{catalog.deposit_per_jar} is fully refundable when you return the jar. Passes are always cheaper per jar.</p>
-        <Browse items={items} />
+        <Suspense fallback={<><Skeleton className="mb-6 h-6 max-w-xl" /><Skeleton className="h-96" /></>}>
+          <Pricing />
+        </Suspense>
       </section>
 
       <section id="order" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-12">
@@ -73,7 +66,9 @@ async function HomeContent() {
             <p className="mt-2 inline-block rounded-full bg-brand-soft px-3 py-1 text-sm font-semibold text-brand">No signup needed. Order as a guest.</p>
           </div>
         </div>
-        <OrderForm catalog={catalog} listings={listings} />
+        <Suspense fallback={<Skeleton className="h-[36rem]" />}>
+          <Order />
+        </Suspense>
       </section>
 
       <section id="how" className="mx-auto max-w-6xl px-4 py-16">
@@ -101,26 +96,66 @@ async function HomeContent() {
       <section className="py-16">
         <div className="mx-auto max-w-6xl px-4">
           <h2 className="title">Where we deliver</h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-4">
-            {catalog.zones.map((z) => (
-              <div key={z.id} className="card p-5">
-                <h3 className="font-semibold">{z.name}</h3>
-                <p className="text-sm text-muted">{z.areas.join(", ")}</p>
-                <span className={`mt-3 inline-block rounded-full px-3 py-1 text-xs font-medium ${z.status === "launching" ? "bg-green-500/15 text-green-700" : "bg-amber-500/15 text-amber-700"}`}>
-                  {z.status === "launching" ? "Launching now" : "Coming soon"}
-                </span>
-              </div>
-            ))}
-          </div>
+          <Suspense fallback={<Skeleton className="mt-8 h-32" />}>
+            <Zones />
+          </Suspense>
         </div>
       </section>
       <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="card mx-auto max-w-xl p-6 shadow-sm">
           <h2 className="text-xl font-extrabold">Get your first jar free</h2>
-          <p className="mb-4 text-sm text-muted">You only pay the ₹{catalog.deposit_per_jar} refundable deposit.</p>
+          <Suspense fallback={<p className="mb-4 text-sm text-muted">You only pay the refundable jar deposit.</p>}>
+            <DepositNote />
+          </Suspense>
           <LeadForm kind="waitlist" cta="Join waitlist" />
         </div>
       </section>
     </>
   );
+}
+
+async function Pricing() {
+  const [catalog, listings] = await loadData();
+  // Once any partner is listed, show only partner products; WaterMart's own packs are the fallback so the page is never empty.
+  const own: Item[] = catalog.products.map((p): Item => ({
+    key: `jd-${p.id}`, pick: p.id, name: p.name, seller: "WaterMart", price: p.price, perJar: p.per_jar, kind: p.jars > 1 ? "pass" : "jar",
+    partner: false, pincodes: [], badge: p.tagline, note: p.validity_days ? `Valid ${p.validity_days} days` : `${p.jars} jar`,
+  }));
+  const partnerItems: Item[] = listings.map((l): Item => ({
+    key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: l.partner === l.name ? "Verified partner" : `by ${l.partner}`, price: l.price, perJar: l.price,
+    kind: "jar", partner: true, partnerName: l.partner, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
+  }));
+  return (
+    <>
+      <p className="mb-6 text-muted">Jar deposit of ₹{catalog.deposit_per_jar} is fully refundable when you return the jar. Passes are always cheaper per jar.</p>
+      <Browse items={partnerItems.length > 0 ? partnerItems : own} />
+    </>
+  );
+}
+
+async function Order() {
+  const [catalog, listings] = await loadData();
+  return <OrderForm catalog={catalog} listings={listings} />;
+}
+
+async function Zones() {
+  const [catalog] = await loadData();
+  return (
+    <div className="mt-8 grid gap-4 md:grid-cols-4">
+      {catalog.zones.map((z) => (
+        <div key={z.id} className="card p-5">
+          <h3 className="font-semibold">{z.name}</h3>
+          <p className="text-sm text-muted">{z.areas.join(", ")}</p>
+          <span className={`mt-3 inline-block rounded-full px-3 py-1 text-xs font-medium ${z.status === "launching" ? "bg-green-500/15 text-green-700" : "bg-amber-500/15 text-amber-700"}`}>
+            {z.status === "launching" ? "Launching now" : "Coming soon"}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+async function DepositNote() {
+  const [catalog] = await loadData();
+  return <p className="mb-4 text-sm text-muted">You only pay the ₹{catalog.deposit_per_jar} refundable deposit.</p>;
 }

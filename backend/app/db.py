@@ -2,8 +2,10 @@
 
 Callers write SQL with `?` placeholders and use `RETURNING` / `CURRENT_TIMESTAMP`, which both engines accept.
 """
+import hashlib
 import os
 import sqlite3
+import threading
 from contextlib import contextmanager
 from datetime import datetime
 
@@ -135,17 +137,41 @@ class _Conn:
         return self.raw.execute(sql, tuple(args))
 
 
+_pool = None
+_pool_lock = threading.Lock()
+
+
+def _pg_pool():
+    """One small pool per process. Opening a fresh connection to a hosted Postgres costs several network round
+    trips (TCP + TLS + auth) on every request; a warm instance reuses its connection instead."""
+    global _pool
+    if _pool is None:
+        with _pool_lock:
+            if _pool is None:
+                from psycopg.rows import dict_row
+                from psycopg_pool import ConnectionPool
+
+                _pool = ConnectionPool(
+                    DATABASE_URL,
+                    # prepare_threshold=None: poolers in transaction mode (Supabase :6543, Neon -pooler) reject prepared statements
+                    kwargs={"row_factory": dict_row, "prepare_threshold": None},
+                    min_size=1, max_size=5, max_idle=120,
+                    # A serverless instance can be frozen for a while; drop a connection the server closed meanwhile.
+                    check=ConnectionPool.check_connection,
+                    open=True,
+                )
+    return _pool
+
+
 @contextmanager
 def connect():
     if IS_PG:
-        import psycopg
-        from psycopg.rows import dict_row
-
-        # prepare_threshold=None: poolers in transaction mode (Supabase :6543, Neon -pooler) reject prepared statements
-        raw = psycopg.connect(DATABASE_URL, row_factory=dict_row, prepare_threshold=None)
-    else:
-        raw = sqlite3.connect(DB_PATH)
-        raw.row_factory = sqlite3.Row
+        # Commits on success, rolls back on error, and hands the connection back to the pool.
+        with _pg_pool().connection() as raw:
+            yield _Conn(raw)
+        return
+    raw = sqlite3.connect(DB_PATH)
+    raw.row_factory = sqlite3.Row
     try:
         yield _Conn(raw)
         raw.commit()
@@ -162,24 +188,32 @@ _NEW_COLUMNS = {
     "partners": [("password_hash", "TEXT"), ("setup_code_hash", "TEXT"), ("setup_expires", "BIGINT NOT NULL DEFAULT 0"),
                  ("failed_attempts", "INTEGER NOT NULL DEFAULT 0"), ("locked_until", "BIGINT NOT NULL DEFAULT 0"), ("deposit_per_jar", "INTEGER")],
 }
+_LATE_DDL = "CREATE INDEX IF NOT EXISTS idx_orders_partner ON orders(partner_id);"
+
+# Postgres: all migrations as one script, tagged with its own hash. Every cold start would otherwise run ~15 DDL
+# statements (each taking table locks); now it is one lookup, and the script runs only when it has changed.
+_PG_MIGRATION = SCHEMA + "".join(
+    f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {typ};\n" for table, cols in _NEW_COLUMNS.items() for col, typ in cols
+) + _LATE_DDL
+_SCHEMA_TAG = "schema:" + hashlib.sha256(_PG_MIGRATION.encode()).hexdigest()[:16]
 
 
 def init_db() -> None:
     """Create tables, then add columns introduced after a database was first created."""
+    if IS_PG:
+        with connect() as conn:
+            tag = conn.raw.execute("SELECT obj_description(to_regclass('public.leads'), 'pg_class') AS tag").fetchone()["tag"]
+            if tag != _SCHEMA_TAG:
+                conn.raw.execute(_PG_MIGRATION + f"\nCOMMENT ON TABLE leads IS '{_SCHEMA_TAG}';")
+        return
     with connect() as conn:
-        if IS_PG:
-            conn.raw.execute(SCHEMA)
-        else:
-            conn.raw.executescript(SCHEMA)
+        conn.raw.executescript(SCHEMA)
+        have_by_table = {t: {r["name"] for r in conn.raw.execute(f"PRAGMA table_info({t})")} for t in _NEW_COLUMNS}
         for table, cols in _NEW_COLUMNS.items():
-            have = set() if IS_PG else {r["name"] for r in conn.raw.execute(f"PRAGMA table_info({table})")}
             for col, typ in cols:
-                if IS_PG:
-                    conn.raw.execute(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {typ}")
-                elif col not in have:
+                if col not in have_by_table[table]:
                     conn.raw.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
-    with connect() as conn:
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_orders_partner ON orders(partner_id)")
+        conn.raw.execute(_LATE_DDL)
 
 
 def ts(value) -> str:

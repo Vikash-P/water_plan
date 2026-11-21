@@ -33,25 +33,32 @@ const FALLBACK: Catalog = {
 
 export type Listing = { id: number; name: string; size_litres: number; price: number; pincodes: string[]; partner: string; deposit_per_jar: number };
 
-export async function getListings(): Promise<Listing[]> {
-  "use cache";
+// A slow or cold API must never hold the page open: give up after this and show the fallback instead.
+const TIMEOUT_MS = 2500;
+
+// The cached fetchers throw on failure so a fallback is never stored in the cache; the next request retries.
+// "use cache: remote": pages read this data at request time (after connection()), where plain "use cache" is
+// per-instance memory that serverless throws away, so almost every visit would wait on the Python API.
+// The remote cache is shared by all instances (provided by Vercel; plain in-memory when run locally).
+async function fetchJson(path: string) {
+  "use cache: remote";
   cacheLife("minutes");
+  const res = await fetch(new URL(path, backendBase()), { signal: AbortSignal.timeout(TIMEOUT_MS) });
+  if (!res.ok) throw new Error(`${path}: ${res.status}`);
+  return res.json();
+}
+
+export async function getListings(): Promise<Listing[]> {
   try {
-    const res = await fetch(new URL("api/listings", backendBase()));
-    if (!res.ok) return [];
-    return (await res.json()).listings;
+    return (await fetchJson("api/listings")).listings;
   } catch {
     return [];
   }
 }
 
 export async function getCatalog(): Promise<Catalog> {
-  "use cache";
-  cacheLife("minutes");
   try {
-    const res = await fetch(new URL("api/catalog", backendBase()));
-    if (!res.ok) return FALLBACK;
-    return await res.json();
+    return await fetchJson("api/catalog");
   } catch {
     return FALLBACK;
   }
