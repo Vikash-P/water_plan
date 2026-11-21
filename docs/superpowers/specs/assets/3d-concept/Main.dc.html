@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WaterMart home — 3D concept</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0050C8}a:hover{color:#003B94}
+@keyframes wmFloat{0%,100%{translate:0 0}50%{translate:0 -16px}}
+@keyframes wmShadow{0%,100%{translate:0 0;scale:1;opacity:1}50%{translate:0 16px;scale:0.8;opacity:0.55}}
+@keyframes wmBob{0%,100%{translate:0 0}50%{translate:0 -10px}}
+@keyframes wmWave{0%,100%{scale:1 1}50%{scale:0.94 1.5}}
+@keyframes wmRipple{0%{scale:0.6;opacity:0}35%{opacity:1}100%{scale:1.3;opacity:0}}
+@keyframes wmRise{from{opacity:0;translate:0 28px}to{opacity:1;translate:0 0}}
+@keyframes wmFill{from{width:0}to{width:33%}}
+.wm-lift{transition:translate .25s ease,box-shadow .25s ease}.wm-lift:hover{translate:0 -4px}
+.wm-press{transition:translate .12s ease}.wm-press:active{translate:0 3px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="font-family: Inter, system-ui, sans-serif; color: #0B1F33; background: #F2F7FB; min-height: 100vh">
+
+<!-- NAV -->
+<header style="position: sticky; top: 0; z-index: 10; background: rgba(242,247,251,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid #DCE6F0">
+<div style="max-width: 1240px; margin: 0 auto; padding: 16px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+<a href="#top" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #0B1F33">
+<span style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(145deg, #2B86FF, #0047B3); box-shadow: 0 4px 0 #00327F, 0 8px 16px rgba(0,71,179,0.3); display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"></path></svg>
+</span>
+<span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 0.02em">WaterMart</span>
+</a>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; gap: 6px 22px; flex: 1 1 auto; font-size: 15px">
+<a href="#how" style="color: #33475B; text-decoration: none">How it works</a>
+<a href="#pricing" style="color: #33475B; text-decoration: none">Pricing</a>
+<a href="#areas" style="color: #33475B; text-decoration: none">Areas</a>
+<a href="#business" style="color: #33475B; text-decoration: none">For business</a>
+<a href="#faq" style="color: #33475B; text-decoration: none">FAQ</a>
+</nav>
+<div style="display: flex; gap: 10px; align-items: center">
+<a href="#track" style="padding: 11px 16px; border-radius: 12px; color: #0B1F33; text-decoration: none; font-weight: 500; border: 1px solid #C6D5E4; background: #FFFFFF">Track order</a>
+<a href="Order.dc.html" class="wm-lift wm-press" style="padding: 12px 20px; border-radius: 12px; color: #FFFFFF; background: #0057D9; text-decoration: none; font-weight: 600; box-shadow: 0 4px 0 #003C99, 0 10px 20px rgba(0,87,217,0.25)">Order now</a>
+</div>
+</div>
+</header>
+
+<!-- HERO -->
+<section id="top" style="max-width: 1240px; margin: 0 auto; padding: 72px 24px 56px; display: flex; flex-wrap: wrap; align-items: center; gap: 48px">
+<div style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; background: #FFFFFF; border: 1px solid #D3E1EE; font-size: 14px; font-weight: 500; color: #1D3A57">
+<span style="width: 8px; height: 8px; border-radius: 50%; background: #12A150"></span>Now delivering in Andheri West
+</span>
+<h1 style="animation: wmRise 0.8s ease-out both; margin: 0; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 64px; line-height: 1.02; letter-spacing: -0.02em">20L water at your door in about 2 hours.</h1>
+<p style="margin: 0; font-size: 19px; line-height: 1.55; color: #3A4F64; max-width: 520px">Sealed, ISI-certified jars from verified Mumbai plants. Pay once by UPI, refill with one tap, hand over with an OTP.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; padding: 8px; background: #FFFFFF; border-radius: 18px; border: 1px solid #D3E1EE; box-shadow: 0 2px 0 #D3E1EE, 0 18px 40px rgba(11,31,51,0.08); max-width: 540px">
+<label for="pin" style="position: absolute; left: -9999px">Pincode or area</label>
+<input id="pin" type="text" placeholder="Enter pincode or society name" style="flex: 1 1 220px; min-width: 0; border: 0; outline: none; font: inherit; font-size: 16px; padding: 14px 12px; background: transparent; color: #0B1F33">
+<button type="button" class="wm-press" style="flex: 0 0 auto; border: 0; border-radius: 12px; padding: 14px 22px; font: inherit; font-weight: 600; color: #FFFFFF; background: #0057D9; box-shadow: 0 4px 0 #003C99; cursor: pointer">Check delivery</button>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px; font-size: 14px; color: #3A4F64">
+<span style="display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0057D9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>No signup needed</span>
+<span style="display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0057D9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Confirm on WhatsApp</span>
+<span style="display: flex; align-items: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0057D9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Deposit refunded on return</span>
+</div>
+</div>
+
+<!-- 3D SCENE -->
+<div style="flex: 1 1 440px; min-width: 0; display: flex; justify-content: center">
+<div style="position: relative; width: 480px; max-width: 100%; height: 520px">
+<!-- isometric platform -->
+<div style="position: absolute; left: 50%; top: 340px; width: 380px; height: 380px; margin-left: -190px; transform: rotateX(62deg) rotateZ(45deg); border-radius: 48px; background: linear-gradient(135deg, #FFFFFF, #DCEAF7); box-shadow: 12px 12px 0 #B8CFE6, 24px 24px 0 #9DBBD9, 40px 40px 60px rgba(11,31,51,0.18)"></div>
+<!-- ripple rings -->
+<div style="position: absolute; left: 50%; top: 395px; width: 300px; height: 90px; margin-left: -150px; border-radius: 50%; border: 2px solid rgba(0,87,217,0.18); animation: wmRipple 3.2s ease-out infinite"></div>
+<div style="position: absolute; left: 50%; top: 410px; width: 220px; height: 62px; margin-left: -110px; border-radius: 50%; border: 2px solid rgba(0,87,217,0.28); animation: wmRipple 3.2s 1.6s ease-out infinite"></div>
+<!-- jar -->
+<div style="position: absolute; left: 50%; top: 70px; width: 200px; height: 330px; margin-left: -100px; animation: wmFloat 4s ease-in-out infinite">
+<div style="position: absolute; left: 20px; bottom: -16px; width: 160px; height: 30px; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(11,31,51,0.35), rgba(11,31,51,0) 70%); animation: wmShadow 4s ease-in-out infinite"></div>
+<div style="position: absolute; left: 68px; top: 0; width: 64px; height: 30px; border-radius: 10px 10px 5px 5px; background: linear-gradient(90deg, #00337F, #2B86FF 42%, #0047B3 80%, #00337F); box-shadow: inset 0 -4px 0 rgba(0,0,0,0.18)"></div>
+<div style="position: absolute; left: 66px; top: 22px; width: 68px; height: 12px; border-radius: 4px; background: linear-gradient(90deg, #FF8A2A, #FFC270 45%, #E86E0C)"></div>
+<div style="position: absolute; left: 78px; top: 32px; width: 44px; height: 22px; background: linear-gradient(90deg, #8EBEE6, #EAF6FF 45%, #9CC6EA)"></div>
+<div style="position: absolute; left: 10px; top: 50px; width: 180px; height: 276px; border-radius: 78px 78px 30px 30px; overflow: hidden; background: linear-gradient(90deg, #8FBDE6, #EEF8FF 36%, #B7D8F3 68%, #7FAEDB); box-shadow: inset 0 0 0 2px rgba(255,255,255,0.5)">
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: 74%; background: linear-gradient(90deg, #0B5FD0, #4FA9FF 36%, #1F7DE6 68%, #0A4FAE)">
+<div style="position: absolute; left: 0; right: 0; top: -9px; height: 18px; border-radius: 50%; background: #8FD2FF; animation: wmWave 2.6s ease-in-out infinite"></div>
+</div>
+<div style="position: absolute; left: 0; right: 0; top: 36%; height: 3px; background: rgba(255,255,255,0.35)"></div>
+<div style="position: absolute; left: 0; right: 0; top: 86%; height: 3px; background: rgba(255,255,255,0.35)"></div>
+<div style="position: absolute; left: 32px; top: 30px; width: 16px; height: 210px; border-radius: 10px; background: rgba(255,255,255,0.55)"></div>
+<div style="position: absolute; left: 50%; top: 118px; width: 108px; margin-left: -54px; padding: 10px 0; border-radius: 10px; background: #FFFFFF; text-align: center; box-shadow: 0 6px 14px rgba(0,40,100,0.25)">
+<div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 28px; line-height: 1; color: #0B1F33">20L</div>
+<div style="margin-top: 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #1D3A57">ISI · SEALED</div>
+</div>
+</div>
+</div>
+<!-- floating chips -->
+<div style="position: absolute; left: 0; top: 96px; animation: wmBob 5s ease-in-out infinite; padding: 12px 16px; border-radius: 16px; background: #FFFFFF; box-shadow: 0 4px 0 #CFDDEB, 0 20px 36px rgba(11,31,51,0.14); transform: rotate(-4deg); display: flex; align-items: center; gap: 10px">
+<span style="width: 36px; height: 36px; border-radius: 10px; background: #E5F0FF; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0057D9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+<span><span style="display: block; font-weight: 600; font-size: 15px">About 2 hours</span><span style="display: block; font-size: 13px; color: #4A5B6E">ASAP delivery</span></span>
+</div>
+<div style="position: absolute; right: 0; top: 200px; animation: wmBob 5s -1.7s ease-in-out infinite; padding: 12px 16px; border-radius: 16px; background: #FFFFFF; box-shadow: 0 4px 0 #CFDDEB, 0 20px 36px rgba(11,31,51,0.14); transform: rotate(3deg); display: flex; align-items: center; gap: 10px">
+<span style="width: 36px; height: 36px; border-radius: 10px; background: #FFF1E2; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B85300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6" height="6"></rect><rect x="14" y="4" width="6" height="6"></rect><rect x="4" y="14" width="6" height="6"></rect><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2"></path></svg></span>
+<span><span style="display: block; font-weight: 600; font-size: 15px">QR seal on every jar</span><span style="display: block; font-size: 13px; color: #4A5B6E">Scan to verify plant</span></span>
+</div>
+<div style="position: absolute; left: 24px; top: 300px; animation: wmBob 5s -3.3s ease-in-out infinite; padding: 12px 16px; border-radius: 16px; background: #0B1F33; color: #FFFFFF; box-shadow: 0 4px 0 #000000, 0 20px 36px rgba(11,31,51,0.25); transform: rotate(-2deg); display: flex; align-items: center; gap: 10px">
+<span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: 0.3em">4827</span>
+<span style="font-size: 13px; color: #C9D6E3">OTP handover</span>
+</div>
+</div>
+</div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="max-width: 1240px; margin: 0 auto; padding: 64px 24px">
+<h2 style="margin: 0 0 8px; font-family: 'Space Grotesk', sans-serif; font-size: 44px; letter-spacing: -0.01em">Three taps to a full jar</h2>
+<p style="margin: 0 0 40px; font-size: 18px; color: #3A4F64">Each step is a raised tile, so the order of things reads at a glance.</p>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px">
+<div style="background: #FFFFFF; border-radius: 24px; padding: 28px; box-shadow: 8px 8px 0 #D3E1EE, 16px 16px 0 #BCD0E4; display: flex; flex-direction: column; gap: 14px">
+<span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 72px; line-height: 1; color: #0057D9; text-shadow: 2px 2px 0 #9CC2F5, 4px 4px 0 #C9DCF7">1</span>
+<h3 style="margin: 0; font-size: 22px">Pick a pass</h3>
+<p style="margin: 0; color: #3A4F64; line-height: 1.55">Pay once by UPI for 10 or 20 jars, plus a refundable deposit per jar placed with you.</p>
+</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 28px; box-shadow: 8px 8px 0 #D3E1EE, 16px 16px 0 #BCD0E4; display: flex; flex-direction: column; gap: 14px">
+<span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 72px; line-height: 1; color: #0057D9; text-shadow: 2px 2px 0 #9CC2F5, 4px 4px 0 #C9DCF7">2</span>
+<h3 style="margin: 0; font-size: 22px">Tap Refill</h3>
+<p style="margin: 0; color: #3A4F64; line-height: 1.55">One button in the app or a WhatsApp message. One credit is used. No cash, no calls.</p>
+</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 28px; box-shadow: 8px 8px 0 #D3E1EE, 16px 16px 0 #BCD0E4; display: flex; flex-direction: column; gap: 14px">
+<span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 72px; line-height: 1; color: #0057D9; text-shadow: 2px 2px 0 #9CC2F5, 4px 4px 0 #C9DCF7">3</span>
+<h3 style="margin: 0; font-size: 22px">Swap at the door</h3>
+<p style="margin: 0; color: #3A4F64; line-height: 1.55">A verified rider brings a sealed jar, takes the empty, and you share a 4-digit OTP.</p>
+</div>
+</div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background: #0B1F33; color: #FFFFFF; padding: 80px 24px">
+<div style="max-width: 1240px; margin: 0 auto">
+<h2 style="margin: 0 0 8px; font-family: 'Space Grotesk', sans-serif; font-size: 44px">Choose how you refill</h2>
+<p style="margin: 0 0 48px; font-size: 18px; color: #C9D6E3">The pass most homes pick sits forward. Deposit shown separately on every card.</p>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 28px; perspective: 1400px">
+<div style="flex: 1 1 280px; max-width: 340px; background: #13304D; border: 1px solid #24476B; border-radius: 24px; padding: 32px; transform: rotateY(14deg); box-shadow: -14px 18px 40px rgba(0,0,0,0.35); display: flex; flex-direction: column; gap: 14px">
+<span style="font-size: 14px; font-weight: 600; letter-spacing: 0.08em; color: #9FC4EC">SINGLE JAR</span>
+<span style="font-family: 'Space Grotesk', sans-serif; font-size: 48px; font-weight: 700">₹30</span>
+<span style="color: #C9D6E3">Try one jar, pay on WhatsApp link.</span>
+<span style="font-size: 14px; color: #C9D6E3">+ ₹[DEPOSIT] refundable deposit</span>
+<a href="Order.dc.html" style="margin-top: 8px; text-align: center; padding: 14px; border-radius: 12px; border: 1px solid #4A77A6; color: #FFFFFF; text-decoration: none; font-weight: 600">Order one</a>
+</div>
+<div style="flex: 1 1 300px; max-width: 360px; background: #FFFFFF; color: #0B1F33; border-radius: 28px; padding: 40px 32px; transform: translateZ(60px) translateY(-12px); box-shadow: 0 8px 0 #0047B3, 0 30px 60px rgba(0,87,217,0.45); display: flex; flex-direction: column; gap: 14px">
+<span style="align-self: flex-start; padding: 6px 12px; border-radius: 999px; background: #FFE2C2; color: #7A3A00; font-size: 13px; font-weight: 600">Most popular</span>
+<span style="font-size: 14px; font-weight: 600; letter-spacing: 0.08em; color: #1D3A57">10-JAR PASS</span>
+<span style="font-family: 'Space Grotesk', sans-serif; font-size: 48px; font-weight: 700">₹[PRICE]</span>
+<span style="color: #3A4F64">One tap refills. Credits never expire.</span>
+<span style="font-size: 14px; color: #3A4F64">+ ₹[DEPOSIT] refundable deposit per jar</span>
+<a href="Order.dc.html" style="margin-top: 8px; text-align: center; padding: 15px; border-radius: 12px; background: #0057D9; color: #FFFFFF; text-decoration: none; font-weight: 600; box-shadow: 0 4px 0 #003C99">Get 10-jar pass</a>
+</div>
+<div style="flex: 1 1 280px; max-width: 340px; background: #13304D; border: 1px solid #24476B; border-radius: 24px; padding: 32px; transform: rotateY(-14deg); box-shadow: 14px 18px 40px rgba(0,0,0,0.35); display: flex; flex-direction: column; gap: 14px">
+<span style="font-size: 14px; font-weight: 600; letter-spacing: 0.08em; color: #9FC4EC">20-JAR PASS</span>
+<span style="font-family: 'Space Grotesk', sans-serif; font-size: 48px; font-weight: 700">₹[PRICE]</span>
+<span style="color: #C9D6E3">For larger homes and small offices.</span>
+<span style="font-size: 14px; color: #C9D6E3">+ ₹[DEPOSIT] refundable deposit per jar</span>
+<a href="Order.dc.html" style="margin-top: 8px; text-align: center; padding: 14px; border-radius: 12px; border: 1px solid #4A77A6; color: #FFFFFF; text-decoration: none; font-weight: 600">Get 20-jar pass</a>
+</div>
+</div>
+</div>
+</section>
+
+<!-- TRUST -->
+<section style="max-width: 1240px; margin: 0 auto; padding: 72px 24px">
+<h2 style="margin: 0 0 32px; font-family: 'Space Grotesk', sans-serif; font-size: 44px">Water you can check yourself</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px">
+<div style="background: #FFFFFF; border-radius: 20px; padding: 24px; border: 1px solid #DCE6F0; box-shadow: 0 6px 0 #DCE6F0; display: flex; flex-direction: column; gap: 10px">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0057D9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"></path><path d="m9 12 2 2 4-4"></path></svg>
+<h3 style="margin: 0; font-size: 19px">ISI/BIS-certified</h3><p style="margin: 0; color: #3A4F64; line-height: 1.5">Licence numbers checked for every partner plant.</p>
+</div>
+<div style="background: #FFFFFF; border-radius: 20px; padding: 24px; border: 1px solid #DCE6F0; box-shadow: 0 6px 0 #DCE6F0; display: flex; flex-direction: column; gap: 10px">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0057D9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+<h3 style="margin: 0; font-size: 19px">Tamper-proof seal</h3><p style="margin: 0; color: #3A4F64; line-height: 1.5">Neck tag with a QR code you can scan at the door.</p>
+</div>
+<div style="background: #FFFFFF; border-radius: 20px; padding: 24px; border: 1px solid #DCE6F0; box-shadow: 0 6px 0 #DCE6F0; display: flex; flex-direction: column; gap: 10px">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0057D9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><path d="M3 10h18"></path></svg>
+<h3 style="margin: 0; font-size: 19px">Prepaid, no cash</h3><p style="margin: 0; color: #3A4F64; line-height: 1.5">No haggling and no extra charges at the door.</p>
+</div>
+<div style="background: #FFFFFF; border-radius: 20px; padding: 24px; border: 1px solid #DCE6F0; box-shadow: 0 6px 0 #DCE6F0; display: flex; flex-direction: column; gap: 10px">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0057D9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path><path d="M4 4l16 16"></path></svg>
+<h3 style="margin: 0; font-size: 19px">Number stays private</h3><p style="margin: 0; color: #3A4F64; line-height: 1.5">Riders never see your phone number.</p>
+</div>
+</div>
+</section>
+
+<!-- AREAS: isometric map -->
+<section id="areas" style="max-width: 1240px; margin: 0 auto; padding: 40px 24px 80px; display: flex; flex-wrap: wrap; align-items: center; gap: 48px">
+<div style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 44px">Where we deliver</h2>
+<p style="margin: 0; font-size: 18px; color: #3A4F64">Raised blocks are live. Flat ones are coming soon, so you can join the list for your area.</p>
+<ul style="list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+<li style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #FFFFFF; border-radius: 14px; border: 1px solid #DCE6F0"><span style="font-weight: 600">Andheri West</span><span style="padding: 4px 10px; border-radius: 999px; background: #DDF5E6; color: #0B6A32; font-size: 13px; font-weight: 600">Live</span></li>
+<li style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #FFFFFF; border-radius: 14px; border: 1px solid #DCE6F0"><span><span style="font-weight: 600">Powai</span> <span style="color: #4A5B6E">· Hiranandani, Chandivali</span></span><a href="#notify" style="font-size: 14px; font-weight: 600">Notify me</a></li>
+<li style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #FFFFFF; border-radius: 14px; border: 1px solid #DCE6F0"><span><span style="font-weight: 600">Malad West</span> <span style="color: #4A5B6E">· Mindspace belt</span></span><a href="#notify" style="font-size: 14px; font-weight: 600">Notify me</a></li>
+<li style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #FFFFFF; border-radius: 14px; border: 1px solid #DCE6F0"><span><span style="font-weight: 600">Thane</span> <span style="color: #4A5B6E">· Ghodbunder Road</span></span><a href="#notify" style="font-size: 14px; font-weight: 600">Notify me</a></li>
+</ul>
+</div>
+<div style="flex: 1 1 440px; min-width: 0; height: 460px; display: flex; align-items: center; justify-content: center; overflow: hidden" aria-hidden="true">
+<div style="position: relative; width: 340px; height: 340px; transform: rotateX(58deg) rotateZ(-45deg)">
+<div style="position: absolute; inset: 0; border-radius: 28px; background: #DCEAF7; box-shadow: 10px 10px 0 #B8CFE6, 20px 20px 40px rgba(11,31,51,0.15)"></div>
+<div style="position: absolute; left: 24px; top: 24px; width: 136px; height: 136px; border-radius: 18px; background: #0057D9; box-shadow: 4px 4px 0 #0047B3, 8px 8px 0 #003C99, 12px 12px 0 #00317F, 16px 16px 0 #00286A, 22px 22px 30px rgba(0,40,106,0.4); display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px">Andheri W</div>
+<div style="position: absolute; left: 180px; top: 24px; width: 136px; height: 136px; border-radius: 18px; background: #FFFFFF; border: 2px dashed #8FB3D9; box-shadow: 3px 3px 0 #C6D8EA; display: flex; align-items: center; justify-content: center; color: #1D3A57; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 17px">Powai</div>
+<div style="position: absolute; left: 24px; top: 180px; width: 136px; height: 136px; border-radius: 18px; background: #FFFFFF; border: 2px dashed #8FB3D9; box-shadow: 3px 3px 0 #C6D8EA; display: flex; align-items: center; justify-content: center; color: #1D3A57; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 17px">Malad W</div>
+<div style="position: absolute; left: 180px; top: 180px; width: 136px; height: 136px; border-radius: 18px; background: #FFFFFF; border: 2px dashed #8FB3D9; box-shadow: 3px 3px 0 #C6D8EA; display: flex; align-items: center; justify-content: center; color: #1D3A57; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 17px">Thane</div>
+</div>
+</div>
+</section>
+
+<!-- WAITLIST -->
+<section id="notify" style="max-width: 1240px; margin: 0 auto 80px; padding: 0 24px">
+<div style="background: #0057D9; color: #FFFFFF; border-radius: 32px; padding: 48px; box-shadow: 0 10px 0 #003C99, 0 30px 60px rgba(0,87,217,0.3); display: flex; flex-wrap: wrap; align-items: center; gap: 32px">
+<div style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: 40px">Your first jar is free</h2>
+<p style="margin: 0; font-size: 17px; color: #E3EEFF">You only pay the refundable jar deposit.</p>
+<div style="margin-top: 8px; height: 14px; border-radius: 999px; background: #003C99; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); overflow: hidden"><div style="width: 33%; height: 100%; border-radius: 999px; background: linear-gradient(180deg, #FFD08A, #FF9A3C); animation: wmFill 1.8s 0.4s ease-out both"></div></div>
+<span style="font-size: 14px; color: #E3EEFF">Launch list is 33% full</span>
+</div>
+<div style="flex: 1 1 320px; min-width: 0; display: flex; flex-wrap: wrap; gap: 10px">
+<label for="wa" style="position: absolute; left: -9999px">WhatsApp number</label>
+<input id="wa" type="tel" placeholder="WhatsApp number" style="flex: 1 1 200px; min-width: 0; border: 0; border-radius: 14px; padding: 16px; font: inherit; font-size: 16px; color: #0B1F33">
+<button type="button" style="flex: 0 0 auto; border: 0; border-radius: 14px; padding: 16px 22px; font: inherit; font-weight: 600; background: #FFFFFF; color: #0047B3; box-shadow: 0 4px 0 #A9C6F0; cursor: pointer">Join waitlist</button>
+</div>
+</div>
+</section>
+
+<footer style="border-top: 1px solid #DCE6F0; padding: 32px 24px">
+<div style="max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; font-size: 14px; color: #4A5B6E">
+<span>WaterMart · Prepaid 20L drinking water across Mumbai. ISI/BIS-certified partner plants only.</span>
+<span style="display: flex; flex-wrap: wrap; gap: 18px"><a href="#refund">Refund policy</a><a href="#deposit">Deposit policy</a><a href="#privacy">Privacy</a><a href="#partner">Become a partner</a></span>
+</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3460}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

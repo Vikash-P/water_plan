@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WaterMart tracking — mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0050C8}a:hover{color:#003B94}
+@keyframes wmDash{to{stroke-dashoffset:-28}}
+@keyframes wmRide{0%{offset-distance:0%}85%,100%{offset-distance:86%}}
+@keyframes wmPing{0%{scale:1;opacity:0.8}100%{scale:2.4;opacity:0}}
+@keyframes wmBreath{0%,100%{opacity:1}50%{opacity:0.55}}
+@keyframes wmPop{0%{opacity:0;scale:0.6}70%{scale:1.08}100%{opacity:1;scale:1}}
+@keyframes wmSheet{from{translate:0 100%}to{translate:0 0}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; position: relative; overflow: hidden; background: #F2F7FB; font-family: Inter, system-ui, sans-serif; color: #0B1F33">
+
+<!-- isometric map -->
+<div style="position: absolute; left: 0; right: 0; top: 0; height: 420px; overflow: hidden; background: #E3EEF8" aria-hidden="true">
+<div style="position: absolute; left: 50%; top: 40px; width: 420px; height: 420px; margin-left: -210px; transform: rotateX(58deg) rotateZ(-45deg); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px">
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA, 8px 8px 0 #B3CBE3"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA, 8px 8px 0 #B3CBE3, 12px 12px 0 #A3BFDC"></div>
+<div style="border-radius: 12px; background: #D6F0DF; box-shadow: 2px 2px 0 #B7E0C4"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA, 8px 8px 0 #B3CBE3"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA, 8px 8px 0 #B3CBE3, 12px 12px 0 #A3BFDC, 16px 16px 0 #93B3D5"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA"></div>
+<div style="border-radius: 12px; background: #D6F0DF; box-shadow: 2px 2px 0 #B7E0C4"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA, 8px 8px 0 #B3CBE3"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA"></div>
+<div style="border-radius: 12px; background: #0057D9; box-shadow: 4px 4px 0 #0047B3, 8px 8px 0 #003C99, 12px 12px 0 #00317F, 16px 16px 20px rgba(0,40,106,0.35)"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA, 8px 8px 0 #B3CBE3"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA"></div>
+<div style="border-radius: 12px; background: #FFFFFF; box-shadow: 4px 4px 0 #C6D8EA, 8px 8px 0 #B3CBE3"></div>
+</div>
+<!-- route dashes and pins drawn flat over the map -->
+<svg width="390" height="420" viewBox="0 0 390 420" style="position: absolute; left: 0; top: 0"><path d="M80 110 C 140 160, 170 190, 210 220 S 280 270, 300 300" fill="none" stroke="#FF8A2A" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 12" style="animation: wmDash 0.9s linear infinite"></path></svg>
+<div style="position: absolute; left: 0; top: 0; offset-path: path('M80 110 C 140 160, 170 190, 210 220 S 280 270, 300 300'); offset-rotate: 0deg; animation: wmRide 10s ease-in-out infinite; width: 44px; height: 44px; border-radius: 14px; background: #FF8A2A; box-shadow: 0 4px 0 #C25A00, 0 10px 20px rgba(194,90,0,0.4); display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="17" r="3"></circle><circle cx="18" cy="17" r="3"></circle><path d="M6 17h5l3-7h3M9 10h4"></path></svg></div>
+<div style="position: absolute; left: 280px; top: 270px; width: 40px; height: 40px; box-sizing: border-box; border-radius: 50%; border: 3px solid #0057D9; animation: wmPing 1.8s ease-out infinite"></div>
+<div style="position: absolute; left: 280px; top: 270px; width: 40px; height: 40px; border-radius: 50%; background: #FFFFFF; border: 4px solid #0057D9; box-shadow: 0 8px 18px rgba(0,71,179,0.35)"></div>
+</div>
+
+<div style="position: absolute; left: 20px; top: 20px; right: 20px; display: flex; justify-content: space-between">
+<a href="Order.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 3px 0 #C6D5E4; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B1F33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></a>
+<a href="#help" style="height: 44px; padding: 0 16px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 3px 0 #C6D5E4; display: flex; align-items: center; gap: 8px; text-decoration: none; color: #0B1F33; font-weight: 600; font-size: 14px">Help on WhatsApp</a>
+</div>
+
+<!-- bottom sheet -->
+<div style="position: absolute; left: 0; right: 0; bottom: 0; top: 380px; animation: wmSheet 0.7s cubic-bezier(0.2, 0.9, 0.3, 1) both; background: #FFFFFF; border-radius: 28px 28px 0 0; box-shadow: 0 -12px 30px rgba(11,31,51,0.14); padding: 12px 20px 20px; display: flex; flex-direction: column; gap: 16px">
+<div style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #C6D5E4"></div>
+<div style="display: flex; justify-content: space-between; align-items: flex-end">
+<div><div style="font-size: 13px; color: #4A5B6E">Out for delivery</div><div style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 28px">Arriving in ~[ETA] min</div></div>
+<div style="text-align: right"><div style="font-size: 12px; color: #4A5B6E">Rider</div><div style="font-weight: 600">[Rider name]</div></div>
+</div>
+
+<!-- progress with raised steps -->
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 10px; border-radius: 6px; background: #0057D9; box-shadow: 0 3px 0 #003C99"></div><span style="font-size: 12px; color: #1D3A57">Confirmed</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 10px; border-radius: 6px; background: #0057D9; box-shadow: 0 3px 0 #003C99"></div><span style="font-size: 12px; color: #1D3A57">Packed</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 10px; border-radius: 6px; background: #FF8A2A; box-shadow: 0 3px 0 #C25A00; animation: wmBreath 1.6s ease-in-out infinite"></div><span style="font-size: 12px; font-weight: 600; color: #0B1F33">On the way</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="height: 10px; border-radius: 6px; background: #DCE6F0"></div><span style="font-size: 12px; color: #4A5B6E">Delivered</span></div>
+</div>
+
+<!-- OTP -->
+<div style="background: #0B1F33; color: #FFFFFF; border-radius: 20px; padding: 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 6px 0 #000000">
+<div><div style="font-size: 13px; color: #C9D6E3">Share at the door</div><div style="font-weight: 600">Handover OTP</div></div>
+<div style="display: flex; gap: 6px">
+<span style="width: 40px; height: 48px; border-radius: 10px; background: #FFFFFF; color: #0B1F33; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 24px; box-shadow: 0 4px 0 #8FA7BF; animation: wmPop 0.5s 0.6s ease-out both">4</span>
+<span style="width: 40px; height: 48px; border-radius: 10px; background: #FFFFFF; color: #0B1F33; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 24px; box-shadow: 0 4px 0 #8FA7BF; animation: wmPop 0.5s 0.72s ease-out both">8</span>
+<span style="width: 40px; height: 48px; border-radius: 10px; background: #FFFFFF; color: #0B1F33; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 24px; box-shadow: 0 4px 0 #8FA7BF; animation: wmPop 0.5s 0.84s ease-out both">2</span>
+<span style="width: 40px; height: 48px; border-radius: 10px; background: #FFFFFF; color: #0B1F33; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 24px; box-shadow: 0 4px 0 #8FA7BF; animation: wmPop 0.5s 0.96s ease-out both">7</span>
+</div>
+</div>
+
+<!-- pass credits -->
+<div style="display: flex; gap: 12px">
+<div style="flex: 1; border: 1px solid #DCE6F0; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #4A5B6E">Pass credits left</span><span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px">[n] of 10</span></div>
+<div style="flex: 1; border: 1px solid #DCE6F0; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #4A5B6E">Empties to return</span><span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px">1 jar</span></div>
+</div>
+<button type="button" style="min-height: 48px; border: 2px solid #0057D9; border-radius: 14px; background: #FFFFFF; color: #0047B3; font: inherit; font-weight: 600; cursor: pointer">Scan jar seal QR on arrival</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
