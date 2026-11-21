@@ -67,9 +67,11 @@ export default function Browse({ items }: { items: Item[] }) {
                 className={`flex flex-[1_1_280px] flex-col gap-3.5 ${hero ? "max-w-[360px] rounded-[28px] bg-white px-8 py-10 text-foreground md:-translate-y-3" : `max-w-[340px] rounded-3xl border border-[#24476B] bg-[#13304D] p-8 text-white ${tilt}`}`}
                 style={hero ? { boxShadow: "0 8px 0 #0047B3, 0 30px 60px rgba(0,87,217,0.45)" } : { boxShadow: "0 18px 40px rgba(0,0,0,0.35)" }}
               >
-                {hero && <span className="self-start rounded-full bg-[#FFE2C2] px-3 py-1.5 text-[13px] font-semibold text-[#7A3A00]">Most popular</span>}
-                <span className={`text-sm font-semibold uppercase tracking-[0.08em] ${hero ? "text-[#1D3A57]" : "text-[#9FC4EC]"}`}>{i.partnerName ?? i.badge ?? i.seller}</span>
-                <h3 className="m-0 text-xl font-bold leading-tight">{i.name}</h3>
+                {hero
+                  ? <span className="self-start rounded-full bg-[#FFE2C2] px-3 py-1.5 text-[13px] font-semibold text-[#7A3A00]">Most popular</span>
+                  : i.badge && i.badge !== "Most popular" && <span className="self-start rounded-full border border-[#4A77A6] px-3 py-1 text-[13px] font-semibold text-[#C9D6E3]">{i.badge}</span>}
+                <h3 className={`m-0 text-sm font-semibold uppercase tracking-[0.08em] ${hero ? "text-[#1D3A57]" : "text-[#9FC4EC]"}`}>{i.name}</h3>
+                {i.partnerName && <span className={`-mt-2 text-sm ${hero ? "text-[#3A4F64]" : "text-[#C9D6E3]"}`}>by {i.partnerName}</span>}
                 <span className="display-font text-5xl font-bold">₹{i.price}</span>
                 <span className={hero ? "text-[#3A4F64]" : "text-[#C9D6E3]"}>{i.kind === "pass" ? `₹${i.perJar} per jar · ${i.note}` : `${i.note} · about 2 hours`}</span>
                 {i.deposit != null && <span className={`text-sm ${hero ? "text-[#3A4F64]" : "text-[#C9D6E3]"}`}>+ ₹{i.deposit} refundable deposit{i.kind === "pass" ? " per jar" : ""}</span>}

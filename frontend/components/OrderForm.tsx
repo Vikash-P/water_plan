@@ -158,7 +158,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
 
   const card = "flex flex-col gap-3.5 rounded-[20px] border border-line bg-white p-[18px]";
   const pickCard = (on: boolean) =>
-    `wm-press flex min-h-14 cursor-pointer flex-col justify-center rounded-2xl border-2 bg-white px-4 py-3 ${on ? "border-brand shadow-[0_4px_0_#0047B3]" : "border-line shadow-[0_3px_0_#DCE6F0]"}`;
+    `wm-press flex min-h-14 cursor-pointer rounded-2xl border-2 bg-white px-4 py-3 ${on ? "border-brand shadow-[0_4px_0_#0047B3]" : "border-line shadow-[0_3px_0_#DCE6F0]"}`;
   const unitPrice = listing ? listing.price : p.price;
   const summary = (
     <>
@@ -193,7 +193,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
           <legend className="mb-2.5 text-base font-semibold">What would you like?</legend>
           <div className="grid gap-3 sm:grid-cols-3">
             {(listings.length > 0 ? [] : catalog.products).map((x) => (
-              <label key={x.id} className={pickCard(product === x.id)}>
+              <label key={x.id} className={`${pickCard(product === x.id)} flex-col justify-center`}>
                 <input type="radio" name="product" className="sr-only" checked={product === x.id} onChange={() => setProduct(x.id)} />
                 <span className="block text-xs font-semibold text-[#0047B3]">{x.tagline}</span>
                 <span className="block font-semibold">{x.name}</span>
@@ -201,7 +201,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
               </label>
             ))}
             {listings.map((l) => (
-              <label key={l.id} className={pickCard(product === `l:${l.id}`)}>
+              <label key={l.id} className={`${pickCard(product === `l:${l.id}`)} flex-col justify-center`}>
                 <input type="radio" name="product" className="sr-only" checked={product === `l:${l.id}`} onChange={() => setProduct(`l:${l.id}`)} />
                 <span className="block text-xs font-semibold text-[#0047B3]">Partner · {l.partner}</span>
                 <span className="block font-semibold">{l.name}</span>
@@ -256,7 +256,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
               <p className="m-0 font-semibold">Deliver to a saved address</p>
               {saved.addresses.map((a, i) => (
                 <button type="button" key={i} onClick={() => chooseAddr(saved, i)} aria-pressed={picked === i}
-                  className={`${pickCard(picked === i)} !min-h-0 text-left`}>
+                  className={`${pickCard(picked === i)} !min-h-0 items-center text-left`}>
                   <span>{a.society}{a.tower ? `, ${a.tower}` : ""}, {a.flat} <span className="text-muted">· {a.pincode}</span></span>
                 </button>
               ))}
@@ -290,7 +290,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
         <fieldset className="m-0 flex flex-col gap-2.5 border-0 p-0">
           <legend className="mb-2.5 text-base font-semibold">When?</legend>
           {SLOTS.map((s) => (
-            <label key={s.id} className={`${pickCard(slot === s.id)} !flex-row items-center justify-between`}>
+            <label key={s.id} className={`${pickCard(slot === s.id)} items-center justify-between gap-3`}>
               <input type="radio" name="slot" className="sr-only" checked={slot === s.id} onChange={() => setSlot(s.id)} />
               <span className="font-semibold">{s.label}</span>
               <span className="text-sm text-muted">{s.hint}</span>

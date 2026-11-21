@@ -10,6 +10,7 @@ export default function Footer() {
           <Link href="/b2b">For business</Link>
           <Link href="/partner">Become a partner</Link>
           <Link href="/track">Track order</Link>
+          <Link href="/account">My account</Link>
         </span>
       </div>
       <p className="mx-auto mt-3 max-w-[1240px] text-sm text-muted">Refund, deposit and privacy policies will be published before launch.</p>

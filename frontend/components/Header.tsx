@@ -22,8 +22,8 @@ export default function Header() {
           ))}
         </nav>
         <div className="ml-auto flex flex-wrap items-center gap-2.5">
-          <Link href="/account" className="btn btn-outline !px-4 !py-2.5 text-sm no-underline">My account</Link>
-          <Link href="/track" className="btn btn-outline !px-4 !py-2.5 text-sm no-underline">Track order</Link>
+          <Link href="/account" className="btn btn-outline !hidden !px-4 !py-2.5 text-sm no-underline sm:!inline-flex">My account</Link>
+          <Link href="/track" className="btn btn-outline !hidden !px-4 !py-2.5 text-sm no-underline sm:!inline-flex">Track order</Link>
           <Link href="/order" className="btn btn-primary wm-lift wm-press !px-5 !py-3 text-sm no-underline">Order now</Link>
         </div>
       </div>
