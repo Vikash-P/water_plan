@@ -38,8 +38,13 @@ export default function HeroJar() {
       if (r.width > 0) burst(r.left + r.width / 2, r.top + r.height * 0.25, 60);
       else if (d?.origin) burst(d.origin.x, d.origin.y, 40);
     };
+    const slosh = (e: Event) => apiRef.current?.kick((e as CustomEvent<{ k: number }>).detail.k);
     window.addEventListener("watermart:pincode", on);
-    return () => window.removeEventListener("watermart:pincode", on);
+    window.addEventListener("watermart:slosh", slosh);
+    return () => {
+      window.removeEventListener("watermart:pincode", on);
+      window.removeEventListener("watermart:slosh", slosh);
+    };
   }, []);
 
   return (

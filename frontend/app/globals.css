@@ -144,3 +144,10 @@ small, .small { letter-spacing: 0.005em; }
   .jar-holder.float, .drop, .jar-shadow, .hop .jar-svg, .shake { animation: none; }
   .jar-svg .cap { transition: none; }
 }
+
+/* Scroll stream */
+.stream { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+.stream .fb { fill: none; stroke: var(--color-brand, #1c6fd0); stroke-opacity: .18; stroke-width: 38; stroke-linecap: round; }
+.stream .fc { fill: none; stroke: #5fb4f5; stroke-width: 16; stroke-linecap: round; }
+.stream .fs { fill: none; stroke: #fff; stroke-opacity: .8; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 14 30; animation: flowdash .6s linear infinite; }
+@keyframes flowdash { to { stroke-dashoffset: -44; } }

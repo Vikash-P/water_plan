@@ -2,7 +2,8 @@ import { Suspense, cache } from "react";
 import { connection } from "next/server";
 import PincodeChecker from "@/components/PincodeChecker";
 import OrderForm from "@/components/OrderForm";
-import LivingJar from "@/components/water/LivingJar";
+import OrderHeadingJar from "@/components/water/OrderHeadingJar";
+import ScrollStream from "@/components/water/ScrollStream";
 import HeroJar from "@/components/water/HeroJar";
 import LeadForm from "@/components/LeadForm";
 import Browse, { type Item } from "@/components/Browse";
@@ -37,7 +38,8 @@ function Skeleton({ className }: { className: string }) {
 export default function Home() {
   return (
     <>
-      <section id="start" className="bg-gradient-to-b from-brand-soft to-background">
+      <ScrollStream />
+      <section id="start" data-stream="source" className="bg-gradient-to-b from-brand-soft to-background">
         <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
           <div className="flex items-center gap-6">
             <div className="min-w-0 flex-1">
@@ -60,7 +62,7 @@ export default function Home() {
 
       <section id="order" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-12">
         <div className="mb-8 flex items-center gap-5">
-          <LivingJar className="hidden w-16 shrink-0 sm:block" />
+          <OrderHeadingJar />
           <div>
             <h2 className="title mb-2">Order 20L water jars</h2>
             <p className="lead">Tell us what and where. We confirm on WhatsApp and deliver in about 2 hours.</p>
@@ -74,7 +76,7 @@ export default function Home() {
 
       <section id="how" className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="title">How it works</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
+        <div data-stream="end" className="mt-8 grid gap-6 md:grid-cols-3">
           {steps.map((s, i) => (
             <div key={s.t} className="card p-6">
               <div className="num-badge">{i + 1}</div>
