@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import PincodeChecker from "@/components/PincodeChecker";
 import OrderForm from "@/components/OrderForm";
 import LivingJar from "@/components/water/LivingJar";
+import HeroJar from "@/components/water/HeroJar";
 import LeadForm from "@/components/LeadForm";
 import Browse, { type Item } from "@/components/Browse";
 import { getCatalog, getListings } from "@/lib/api";
@@ -45,7 +46,7 @@ export default function Home() {
               <div className="mt-6 max-w-lg"><PincodeChecker /></div>
               <p className="mt-4 inline-block rounded-full bg-card px-3 py-1 text-sm font-semibold text-brand shadow-sm">No signup needed to order.</p>
             </div>
-            <LivingJar tilt className="hidden w-56 shrink-0 md:block" />
+            <HeroJar />
           </div>
         </div>
       </section>

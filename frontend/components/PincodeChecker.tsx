@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { celebrateFor, type PincodeStatus } from "@/lib/water/celebrate.ts";
 
 type Result = { valid: boolean; status: string; zone: string | null };
 
@@ -16,6 +17,12 @@ export default function PincodeChecker() {
   const [result, setResult] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [shake, setShake] = useState(false);
+
+  function announce(status: PincodeStatus) {
+    window.dispatchEvent(new CustomEvent("watermart:pincode", { detail: { status } }));
+    if (celebrateFor(status) === "shake") setShake(true);
+  }
 
   async function check(e: React.FormEvent) {
     e.preventDefault();
@@ -23,9 +30,12 @@ export default function PincodeChecker() {
     try {
       const res = await fetch(`/api/serviceability/${encodeURIComponent(pin)}`);
       if (!res.ok) throw new Error();
-      setResult(await res.json());
+      const data: Result = await res.json();
+      setResult(data);
+      announce(data.status as PincodeStatus);
     } catch {
       setError("Couldn't check right now. Please try again.");
+      announce("error");
     } finally {
       setLoading(false);
     }
@@ -40,7 +50,8 @@ export default function PincodeChecker() {
           inputMode="numeric"
           placeholder="Enter your pincode"
           aria-label="Pincode"
-          className="field !rounded-full !px-5"
+          className={`field !rounded-full !px-5${shake ? " shake" : ""}`}
+          onAnimationEnd={() => setShake(false)}
         />
         <button disabled={loading || pin.length !== 6} className="btn btn-accent">
           {loading ? "…" : "Check"}

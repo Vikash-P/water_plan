@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Ripple from "@/components/water/Ripple";
+import Splash from "@/components/water/Splash";
 
 const comfortaa = Comfortaa({ variable: "--font-comfortaa", subsets: ["latin"], weight: "700" });
 const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"] });
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="flex-1">{children}</main>
         <Footer />
         <Ripple />
+        <Splash />
       </body>
     </html>
   );

@@ -138,7 +138,9 @@ small, .small { letter-spacing: 0.005em; }
 @keyframes drop-bob { to { translate: 0 -16px; } }
 .jar-shadow { position: absolute; bottom: -10px; left: 50%; width: 85%; height: 20px; translate: -50% 0; background: radial-gradient(closest-side, rgba(11, 37, 64, 0.28), transparent); animation: jar-shad 4.2s ease-in-out infinite; }
 @keyframes jar-shad { 50% { scale: 0.82; opacity: 0.7; } }
+.shake { animation: field-shake 0.45s ease-in-out; }
+@keyframes field-shake { 20%, 60% { translate: -6px 0; } 40%, 80% { translate: 6px 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .jar-holder.float, .drop, .jar-shadow, .hop .jar-svg { animation: none; }
+  .jar-holder.float, .drop, .jar-shadow, .hop .jar-svg, .shake { animation: none; }
   .jar-svg .cap { transition: none; }
 }
