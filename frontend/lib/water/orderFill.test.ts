@@ -19,10 +19,16 @@ test("phone: 9 digits no, 10 yes (spaces ignored)", () => {
   assert.equal(orderFill({ ...empty, name: "Al", phone: "987654321" }).done, 3);
   assert.equal(orderFill({ ...empty, name: "Al", phone: "98765 43210" }).done, 4);
 });
-test("phone: +91 / 91 prefix stripped only when it leaves exactly 10 digits", () => {
-  assert.equal(orderFill({ ...empty, phone: "+91 98765 43210" }).done, 3);
-  assert.equal(orderFill({ ...empty, phone: "919876543210" }).done, 3);
-  assert.equal(orderFill({ ...empty, phone: "91987654321" }).done, 2); // 11 digits
+test("phone matches backend normalize_phone", () => {
+  const ok = (phone: string) => orderFill({ ...empty, phone }).done === 3;
+  assert.ok(ok("+91 98765 43210"));
+  assert.ok(ok("919876543210"));
+  assert.ok(ok("09876543210"));
+  assert.ok(ok("98765-43210"));
+  assert.ok(!ok("91987654321")); // 11 digits
+  assert.ok(!ok("(987) 654.3210")); // brackets/dots rejected by backend
+  assert.ok(!ok("5876543210")); // must start 6-9
+  assert.ok(!ok("1234567890"));
 });
 test("pincode must be 6 digits", () => {
   assert.equal(orderFill({ ...empty, pincode: "56000" }).done, 2);

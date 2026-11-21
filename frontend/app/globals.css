@@ -157,7 +157,6 @@ small, .small { letter-spacing: 0.005em; }
 .road::after { content: ""; position: absolute; left: 0; right: 0; bottom: 18px; height: 4px;
   background: repeating-linear-gradient(90deg, var(--line) 0 28px, transparent 28px 52px); animation: lane 0.5s linear infinite; }
 @keyframes lane { to { background-position: -52px 0; } }
-.road p { position: absolute; right: 16px; top: 12px; font-weight: 700; color: var(--brand); }
 .scooter { position: absolute; bottom: 20px; left: -140px; width: 130px; z-index: 1; overflow: visible; animation: ride 3.8s cubic-bezier(0.55, 0, 0.5, 1) forwards; }
 @keyframes ride { 0% { left: -140px; } 35% { left: 38%; } 60% { left: 41%; } 100% { left: 105%; } }
 .scooter .bodyg { animation: jig 0.25s ease-in-out infinite alternate; }

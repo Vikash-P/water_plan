@@ -2,7 +2,6 @@
 export default function Scooter() {
   return (
     <div className="road">
-      <p>Delivered in ~2 hours</p>
       <svg className="scooter" viewBox="0 0 130 78" role="img" aria-label="Rider on a scooter carrying your jar">
         <line className="speed" x1="-30" y1="40" x2="-6" y2="40" /><line className="speed" x1="-40" y1="54" x2="-12" y2="54" />
         <g className="bodyg">

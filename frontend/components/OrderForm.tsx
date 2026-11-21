@@ -39,7 +39,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
   const jarRef = useRef<JarApi | null>(null);
   const doneRef = useRef(-1);
   const [fillInfo, setFillInfo] = useState(() => orderFill({ product: true, name: "", phone: "", pincode: "", society: "", flat: "", slot: true }));
-  const onJar = useCallback((api: JarApi) => { jarRef.current = api; }, []);
+  const onJar = useCallback((api: JarApi) => { jarRef.current = api; doneRef.current = -1; setFillInfo((o) => o); }, []);
   const onPlacedJar = useCallback((api: JarApi) => {
     // After the success scroll-to-top has settled: close the cap, hop and splash once.
     requestAnimationFrame(() => {
@@ -78,7 +78,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
     if (prev >= 0 && r.done > prev) jarRef.current?.kick(0.07);
   }, [product, pin, slot]);
   // Autofill applies via defaultValue + remount, so read the form after render.
-  useEffect(() => { recompute(); }, [recompute, fillKey]);
+  useEffect(() => { recompute(); }, [recompute, fillKey, placed]);
 
   // Only fills in once the customer has typed their own number. A login left over in this browser is used
   // silently when the typed number matches it; any other number has to be verified with a code.

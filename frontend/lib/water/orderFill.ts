@@ -2,10 +2,10 @@ export type OrderFillInput = {
   product: boolean; name: string; phone: string; pincode: string; society: string; flat: string; slot: boolean;
 };
 
-/** Ten digits; a leading 91 (as in +91) is stripped only when that leaves exactly 10. */
+/** Mirrors backend/app/validators.py normalize_phone: strip spaces/hyphens, then a leading +91 / 91 / 0 only when 10 digits remain, then ^[6-9]\d{9}$. */
 function phoneOk(raw: string): boolean {
-  const d = raw.replace(/\D/g, "");
-  return d.length === 10 || (d.length === 12 && d.startsWith("91"));
+  const v = raw.replace(/[\s-]/g, "").replace(/^(\+91|91|0)(?=\d{10}$)/, "");
+  return /^[6-9]\d{9}$/.test(v);
 }
 
 /** How complete the order form is, as a jar level. Product and slot have defaults, so an empty form is 2/7. */
