@@ -28,8 +28,11 @@ export default function Splash() {
       cv.width = innerWidth * d; cv.height = innerHeight * d;
       ctx.setTransform(d, 0, 0, d, 0, 0);
     };
-    size();
-    window.addEventListener("resize", size);
+    const stop = () => {
+      unsub?.(); unsub = null;
+      window.removeEventListener("resize", size);
+      cv.width = cv.height = 0; // free the backing store while idle
+    };
 
     const tick = (_t: number, dt: number) => {
       const f = dt * 60;
@@ -50,8 +53,7 @@ export default function Splash() {
       }
       ctx.globalAlpha = 1;
       if (!parts.length) {
-        ctx.clearRect(0, 0, innerWidth, innerHeight);
-        unsub?.(); unsub = null;
+        stop();
       }
     };
 
@@ -60,7 +62,11 @@ export default function Splash() {
         const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4, sp = (4 + Math.random() * 8) * sc;
         parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, r: 2.5 + Math.random() * 4, life: 1, c: COLS[i % COLS.length] });
       }
-      if (!unsub) unsub = subscribe(tick);
+      if (!unsub) {
+        size();
+        window.addEventListener("resize", size);
+        unsub = subscribe(tick);
+      }
     };
 
     return () => {

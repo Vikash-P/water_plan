@@ -30,11 +30,13 @@ export default function HeroJar() {
   useEffect(() => {
     const on = (e: Event) => {
       const jar = apiRef.current;
-      const status = (e as CustomEvent<{ status: PincodeStatus }>).detail?.status;
-      if (!jar || celebrateFor(status) !== "splash") return;
+      const d = (e as CustomEvent<{ status: PincodeStatus; origin?: { x: number; y: number } }>).detail;
+      const status = d?.status;
+      if (!jar || !status || celebrateFor(status) !== "splash") return;
       jar.hop(); jar.kick(0.06);
       const r = jar.el.getBoundingClientRect();
       if (r.width > 0) burst(r.left + r.width / 2, r.top + r.height * 0.25, 60);
+      else if (d?.origin) burst(d.origin.x, d.origin.y, 40);
     };
     window.addEventListener("watermart:pincode", on);
     return () => window.removeEventListener("watermart:pincode", on);

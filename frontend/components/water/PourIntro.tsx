@@ -48,6 +48,8 @@ export default function PourIntro({ jar }: { jar: JarApi | null }) {
       if (finished) return;
       finished = true;
       unsub(); ctx.clearRect(0, 0, innerWidth, innerHeight);
+      window.removeEventListener("resize", size);
+      cv.width = cv.height = 0;
       jar.setCapped(true); jar.setTarget(FULL);
       setDone(true);
     };

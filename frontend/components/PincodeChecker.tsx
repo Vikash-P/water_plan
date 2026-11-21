@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { celebrateFor, type PincodeStatus } from "@/lib/water/celebrate.ts";
 
 type Result = { valid: boolean; status: string; zone: string | null };
@@ -18,9 +18,12 @@ export default function PincodeChecker() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   function announce(status: PincodeStatus) {
-    window.dispatchEvent(new CustomEvent("watermart:pincode", { detail: { status } }));
+    const r = inputRef.current?.getBoundingClientRect();
+    const origin = r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : undefined;
+    window.dispatchEvent(new CustomEvent("watermart:pincode", { detail: { status, origin } }));
     if (celebrateFor(status) === "shake") setShake(true);
   }
 
@@ -45,6 +48,7 @@ export default function PincodeChecker() {
     <div>
       <form onSubmit={check} className="flex gap-2">
         <input
+          ref={inputRef}
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
           inputMode="numeric"
