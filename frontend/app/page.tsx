@@ -17,7 +17,6 @@ const steps = [
 
 const ICON = { width: 32, height: 32, viewBox: "0 0 24 24", fill: "none", stroke: "#0057D9", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
 const trust = [
-  { t: "ISI/BIS-certified", d: "Licence numbers checked for every partner plant.", icon: <svg {...ICON}><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" /><path d="m9 12 2 2 4-4" /></svg> },
   { t: "Tamper-proof seal", d: "Neck tag with a QR code you can scan at the door.", icon: <svg {...ICON}><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg> },
   { t: "Prepaid, no cash", d: "No haggling and no extra charges at the door.", icon: <svg {...ICON}><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18" /></svg> },
   { t: "Number stays private", d: "Riders never see your phone number.", icon: <svg {...ICON}><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><path d="M4 4l16 16" /></svg> },
