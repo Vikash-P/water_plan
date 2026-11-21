@@ -69,7 +69,9 @@ export default function Browse({ items }: { items: Item[] }) {
               >
                 {hero && popular
                   ? <span className="self-start rounded-full bg-[#FFE2C2] px-3 py-1.5 text-[13px] font-semibold text-[#7A3A00]">Most popular</span>
-                  : i.badge && i.badge !== "Most popular" && <span className="self-start rounded-full border border-[#4A77A6] px-3 py-1 text-[13px] font-semibold text-[#C9D6E3]">{i.badge}</span>}
+                  : i.badge && i.badge !== "Most popular" && (
+                    <span className={`self-start rounded-full border px-3 py-1 text-[13px] font-semibold ${hero ? "border-[#C6D5E4] text-[#1D3A57]" : "border-[#4A77A6] text-[#C9D6E3]"}`}>{i.badge}</span>
+                  )}
                 <h3 className={`m-0 text-sm font-semibold uppercase tracking-[0.08em] ${hero ? "text-[#1D3A57]" : "text-[#9FC4EC]"}`}>{i.name}</h3>
                 {i.partner && <span className={`-mt-2 text-sm ${hero ? "text-[#3A4F64]" : "text-[#C9D6E3]"}`}>Verified partner</span>}
                 <span className="display-font text-5xl font-bold">₹{i.price}</span>
