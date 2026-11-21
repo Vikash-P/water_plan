@@ -188,7 +188,12 @@ _NEW_COLUMNS = {
     "partners": [("password_hash", "TEXT"), ("setup_code_hash", "TEXT"), ("setup_expires", "BIGINT NOT NULL DEFAULT 0"),
                  ("failed_attempts", "INTEGER NOT NULL DEFAULT 0"), ("locked_until", "BIGINT NOT NULL DEFAULT 0"), ("deposit_per_jar", "INTEGER")],
 }
-_LATE_DDL = "CREATE INDEX IF NOT EXISTS idx_orders_partner ON orders(partner_id);"
+_LATE_DDL = (
+    "CREATE INDEX IF NOT EXISTS idx_orders_partner ON orders(partner_id);"
+    # Listings made before product names existed kept the shop name in `name`: move it to `brand` (shop name, never
+    # shown to customers) and give them a plain product name the partner can change. Runs once: after it, brand is set.
+    "UPDATE listings SET brand = name, name = size_litres || 'L drinking water jar' WHERE brand IS NULL;"
+)
 
 # Postgres: all migrations as one script, tagged with its own hash. Every cold start would otherwise run ~15 DDL
 # statements (each taking table locks); now it is one lookup, and the script runs only when it has changed.
@@ -213,7 +218,7 @@ def init_db() -> None:
             for col, typ in cols:
                 if col not in have_by_table[table]:
                     conn.raw.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
-        conn.raw.execute(_LATE_DDL)
+        conn.raw.executescript(_LATE_DDL)
 
 
 def ts(value) -> str:

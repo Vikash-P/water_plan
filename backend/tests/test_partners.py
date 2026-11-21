@@ -11,7 +11,7 @@ from app.main import app  # noqa: E402
 
 ADMIN = {"X-Admin-Key": "test-key"}
 PHONE = "9830011111"
-L = {"name": "Aqua Pure 20L", "size_litres": 20, "price": 58, "pincodes": "400053, 400058"}
+L = {"name": "Mineral Water 20L", "shop_name": "Aqua Pure Shop", "size_litres": 20, "price": 58, "pincodes": "400053, 400058"}
 
 
 def login(c, phone):
@@ -35,7 +35,14 @@ def test_partner_listing_review_flow():
         assert c.get("/api/listings").json()["listings"] == []  # pending is not public
         assert c.patch(f"/api/admin/listings/{lid}", headers=ADMIN, json={"status": "approved"}).status_code == 200
         pub = c.get("/api/listings").json()["listings"]
-        assert len(pub) == 1 and pub[0]["price"] == 58 and pub[0]["partner"] == "Aqua Pure"
+        assert len(pub) == 1 and pub[0]["price"] == 58 and pub[0]["name"] == "Mineral Water 20L"
+        # customers never get the partner's business name or shop name
+        assert "partner" not in pub[0] and "shop_name" not in pub[0]
+        assert "Aqua Pure" not in c.get("/api/listings").text
+        # the partner and ops still see the shop name
+        assert c.get("/api/partner/me").json()["listings"][0]["shop_name"] == "Aqua Pure Shop"
+        adm = c.get("/api/admin/listings", headers=ADMIN).json()["listings"][0]
+        assert adm["partner"] == "Aqua Pure" and adm["shop_name"] == "Aqua Pure Shop"
         # editing sends it back to review and hides it
         assert c.patch(f"/api/partner/listings/{lid}", json={**L, "price": 40}).json()["status"] == "pending"
         assert c.get("/api/listings").json()["listings"] == []
@@ -66,11 +73,12 @@ def test_order_from_partner_listing_and_delivery():
         assert c.post("/api/orders", json={**order, "listing_id": lid}).status_code == 422
         c.patch(f"/api/admin/listings/{lid}", headers=ADMIN, json={"status": "approved"})
         # wrong pincode for this partner
-        assert c.post("/api/orders", json={**order, "listing_id": lid, "pincode": "400058"}).status_code == 422
+        wrong = c.post("/api/orders", json={**order, "listing_id": lid, "pincode": "400058"})
+        assert wrong.status_code == 422 and "Delta Water" not in wrong.text and "Aqua Pure" not in wrong.text
         r = c.post("/api/orders", json={**order, "listing_id": lid})
         assert r.status_code == 201
         o = r.json()
-        assert o["product"] == "Aqua Pure 20L" and o["amount"] == 116 and o["deposit"] == 700
+        assert o["product"] == "Mineral Water 20L" and o["amount"] == 116 and o["deposit"] == 700
         mine = c.get("/api/partner/orders").json()["orders"]
         assert mine[0]["code"] == o["code"] and "phone" not in mine[0] and mine[0]["next_status"] is None
         # partner can't jump ahead of ops confirmation
@@ -143,10 +151,31 @@ def test_partner_pincode_counts_as_serviceable_and_orderable():
         assert c.get("/api/serviceability/401203").json()["status"] == "unserved"
         c.post("/api/admin/partners", headers=ADMIN, json={"phone": ph, "business_name": "Rajput", "contact_name": "Raj"})
         assert c.post("/api/partner/auth/setup", json={"phone": ph, "password": "longenough1"}).status_code == 200
-        lid = c.post("/api/partner/listings", json={"name": "Rajput Water", "size_litres": 20, "price": 30, "pincodes": "401203"}).json()["id"]
+        lid = c.post("/api/partner/listings", json={"name": "20L drinking water jar", "shop_name": "Rajput Water", "size_litres": 20, "price": 30, "pincodes": "401203"}).json()["id"]
         assert c.get("/api/serviceability/401203").json()["status"] == "unserved"  # pending, not approved yet
         c.patch(f"/api/admin/listings/{lid}", headers=ADMIN, json={"status": "approved"})
         assert c.get("/api/serviceability/401203").json()["status"] == "launching"
         order = {"name": "Asha Rao", "phone": "9820012345", "pincode": "401203", "society": "Sea View", "flat": "12",
                  "listing_id": lid, "jars_now": 1, "has_jars": False, "slot": "asap"}
         assert c.post("/api/orders", json=order).status_code == 201
+
+
+def test_shop_name_is_required():
+    with TestClient(app) as c:
+        login(c, "9830088888")
+        c.post("/api/admin/partners", headers=ADMIN, json={"phone": "9830088888", "business_name": "Clear Co", "contact_name": "Asha"})
+        no_shop = {k: v for k, v in L.items() if k != "shop_name"}
+        assert c.post("/api/partner/listings", json=no_shop).status_code == 422
+
+
+def test_old_listings_move_shop_name_out_of_product_name():
+    from app.db import connect, init_db
+    with TestClient(app) as c:
+        c.post("/api/admin/partners", headers=ADMIN, json={"phone": "9830099999", "business_name": "Old Co", "contact_name": "Raj"})
+        with connect() as conn:
+            pid = conn.execute("SELECT id FROM partners WHERE phone = ?", ("9830099999",)).fetchone()["id"]
+            lid = conn.execute("INSERT INTO listings (partner_id, name, size_litres, price) VALUES (?, 'Rajput Water', 20, 30) RETURNING id", (pid,)).fetchone()["id"]
+        init_db()
+        with connect() as conn:
+            row = conn.execute("SELECT name, brand FROM listings WHERE id = ?", (lid,)).fetchone()
+        assert row["brand"] == "Rajput Water" and row["name"] == "20L drinking water jar"

@@ -133,8 +133,8 @@ async function Pricing() {
     deposit: catalog.deposit_per_jar,
   }));
   const partnerItems: Item[] = listings.map((l): Item => ({
-    key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: l.partner === l.name ? "Verified partner" : `by ${l.partner}`, price: l.price, perJar: l.price,
-    kind: "jar", partner: true, partnerName: l.partner, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
+    key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: "Verified partner", price: l.price, perJar: l.price,
+    kind: "jar", partner: true, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
     deposit: l.deposit_per_jar ?? catalog.deposit_per_jar,
   }));
   return <Browse items={partnerItems.length > 0 ? partnerItems : own} />;

@@ -182,7 +182,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
         <div className="flex items-center gap-4 rounded-3xl bg-white p-5" style={{ boxShadow: "0 6px 0 #D3E1EE, 0 18px 30px rgba(11,31,51,0.08)" }}>
           <CssJar size="sm" level={jarFill(jars)} />
           <div className="flex min-w-0 flex-col gap-1.5">
-            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#1D3A57]">{listing ? listing.partner : "WaterMart"}</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-[#1D3A57]">{listing ? "Verified partner" : "WaterMart"}</span>
             <span className="display-font text-[22px] font-bold leading-tight">{p.name}</span>
             <span className="text-sm text-[#3A4F64]">₹{unitPrice}{perJar ? " per jar" : ""} · ISI sealed</span>
             {listing && <span className="self-start rounded-full bg-[#E5F0FF] px-2.5 py-1 text-xs font-semibold text-[#0047B3]">Verified plant</span>}
@@ -203,7 +203,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
             {listings.map((l) => (
               <label key={l.id} className={`${pickCard(product === `l:${l.id}`)} flex-col justify-center`}>
                 <input type="radio" name="product" className="sr-only" checked={product === `l:${l.id}`} onChange={() => setProduct(`l:${l.id}`)} />
-                <span className="block text-xs font-semibold text-[#0047B3]">Partner · {l.partner}</span>
+                <span className="block text-xs font-semibold text-[#0047B3]">Verified partner</span>
                 <span className="block font-semibold">{l.name}</span>
                 <span className="block text-sm text-muted">₹{l.price} per jar · {l.size_litres}L</span>
               </label>
@@ -272,7 +272,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
           <div>
             <input value={pin} onChange={(e) => { const v = e.target.value.replace(/\D/g, "").slice(0, 6); setPin(v); checkPin(v); }}
               required inputMode="numeric" pattern="\d{6}" placeholder="Pincode" aria-label="Pincode" className="field" />
-            {wrongArea && <p className="mt-2 text-sm text-[#B85300]" role="status">{listing!.partner} delivers to {listing!.pincodes.join(", ")} only. Pick another product for this pincode.</p>}
+            {wrongArea && <p className="mt-2 text-sm text-[#B85300]" role="status">This product delivers to {listing!.pincodes.join(", ")} only. Pick another product for this pincode.</p>}
             {zone && (
               <p className={`mt-2 text-sm ${zone.status === "launching" ? "text-[#0B6A32]" : "text-[#B85300]"}`} role="status">
                 {zone.status === "launching" ? `✓ We deliver in ${zone.zone}` : zone.status === "waitlist" ? `${zone.zone} isn't live yet — you can join the waitlist on the home page.` : "We don't deliver here yet."}

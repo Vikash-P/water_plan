@@ -142,7 +142,8 @@ def _pins(v: str) -> str:
 
 
 class ListingIn(BaseModel):
-    name: str = Field(min_length=2, max_length=100)
+    name: str = Field(min_length=2, max_length=100)  # product name: the only name customers see
+    shop_name: str = Field(min_length=2, max_length=100)  # stored in listings.brand; partner and ops only
     size_litres: int = Field(default=20, ge=1, le=50)
     price: int = Field(ge=1, le=5000)
     pincodes: str = Field(default="", max_length=200)
@@ -153,11 +154,15 @@ class ListingIn(BaseModel):
         return _pins(v)
 
 
-def _listing(r, with_partner=False) -> dict:
+def _listing(r, view: str = "partner") -> dict:
+    """view: "partner" (the partner's own), "admin" (ops, with partner + shop name), "public" (customers: no partner or shop name)."""
     d = {"id": r["id"], "name": r["name"], "size_litres": r["size_litres"], "price": r["price"],
          "pincodes": [x for x in r["pincodes"].split(",") if x], "status": r["status"], "review_note": r["review_note"]}
-    if with_partner:
+    if view != "public":
+        d["shop_name"] = r["brand"]
+    if view == "admin":
         d["partner"] = r["business_name"]
+    if view in ("admin", "public"):
         d["deposit_per_jar"] = DEFAULT_DEPOSIT if r["deposit_per_jar"] is None else r["deposit_per_jar"]
     return d
 
@@ -179,8 +184,8 @@ def add_listing(body: ListingIn, p: dict = Depends(require_partner)):
         if n >= MAX_LISTINGS:
             raise HTTPException(409, f"You can list up to {MAX_LISTINGS} products.")
         row = conn.execute(
-            "INSERT INTO listings (partner_id, name, size_litres, price, pincodes) VALUES (?,?,?,?,?) RETURNING *",
-            (p["id"], body.name.strip(), body.size_litres, body.price, body.pincodes),
+            "INSERT INTO listings (partner_id, name, brand, size_litres, price, pincodes) VALUES (?,?,?,?,?,?) RETURNING *",
+            (p["id"], body.name.strip(), body.shop_name.strip(), body.size_litres, body.price, body.pincodes),
         ).fetchone()
     return _listing(row)
 
@@ -193,9 +198,9 @@ def edit_listing(listing_id: int, body: ListingIn, p: dict = Depends(require_par
             raise HTTPException(404, "Listing not found")
         # Any edit goes back to review so a partner can't swap the price of an approved product unseen.
         row = conn.execute(
-            "UPDATE listings SET name=?, size_litres=?, price=?, pincodes=?, status='pending', review_note=NULL,"
+            "UPDATE listings SET name=?, brand=?, size_litres=?, price=?, pincodes=?, status='pending', review_note=NULL,"
             " updated_at=CURRENT_TIMESTAMP WHERE id=? RETURNING *",
-            (body.name.strip(), body.size_litres, body.price, body.pincodes, listing_id),
+            (body.name.strip(), body.shop_name.strip(), body.size_litres, body.price, body.pincodes, listing_id),
         ).fetchone()
     return _listing(row)
 
@@ -266,7 +271,7 @@ def public_listings():
             "SELECT l.*, p.business_name, p.deposit_per_jar FROM listings l JOIN partners p ON p.id = l.partner_id"
             " WHERE l.status = 'approved' AND p.status = 'active' ORDER BY l.price, l.id LIMIT 100"
         ).fetchall()
-    return {"listings": [_listing(r, True) for r in rows]}
+    return {"listings": [_listing(r, "public") for r in rows]}
 
 
 # ---- Ops (admin) ---------------------------------------------------------------
@@ -361,7 +366,7 @@ def admin_listings(status: Optional[str] = None, x_admin_key: Optional[str] = He
         args.append(status)
     with connect() as conn:
         rows = conn.execute(sql + " ORDER BY l.id DESC LIMIT 200", args).fetchall()
-    return {"listings": [_listing(r, True) for r in rows]}
+    return {"listings": [_listing(r, "admin") for r in rows]}
 
 
 @router.patch("/admin/listings/{listing_id}")
@@ -377,4 +382,4 @@ def admin_review(listing_id: int, body: ReviewIn, x_admin_key: Optional[str] = H
         full = conn.execute(
             "SELECT l.*, p.business_name, p.deposit_per_jar FROM listings l JOIN partners p ON p.id = l.partner_id WHERE l.id = ?", (listing_id,)
         ).fetchone()
-    return _listing(full, True)
+    return _listing(full, "admin")

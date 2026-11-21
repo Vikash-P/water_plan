@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { errorMessage } from "@/lib/orders";
 
-type L = { id: number; name: string; size_litres: number; price: number; pincodes: string[]; status: string; review_note: string | null };
+type L = { id: number; name: string; shop_name: string | null; size_litres: number; price: number; pincodes: string[]; status: string; review_note: string | null };
 type Me = { business_name: string; contact_name: string; phone: string; listings: L[] };
 type PO = { code: string; status: string; customer: string; product: string | null; jars: number; society: string; tower: string | null; flat: string; zone: string; pincode: string; slot: string; notes: string | null; next_status: string | null };
 type State = { kind: "loading" } | { kind: "out" } | { kind: "denied"; msg: string } | { kind: "in"; me: Me };
@@ -83,7 +83,7 @@ function Dashboard({ me, reload, logout }: { me: Me; reload: () => void; logout:
           {me.listings.map((l) => (
             <li key={l.id} className="card flex flex-wrap items-center justify-between gap-4 p-4">
               <div className="min-w-0">
-                <p className="font-semibold">{l.name} <span className="font-normal text-muted">· {l.size_litres}L jar</span></p>
+                <p className="font-semibold">{l.name} <span className="font-normal text-muted">· {l.size_litres}L jar{l.shop_name ? ` · ${l.shop_name}` : ""}</span></p>
                 <p className="text-sm text-muted">₹{l.price} per jar · {l.pincodes.length ? `Delivers to ${l.pincodes.join(", ")}` : "All WaterMart areas"}</p>
                 {l.review_note && <p className="mt-1 text-sm italic">Note from WaterMart: “{l.review_note}”</p>}
               </div>
@@ -109,7 +109,7 @@ function ListingForm({ initial, onSaved, onCancel }: { initial: L | null; onSave
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const body = {
-      name: String(f.get("name")).trim(),
+      name: String(f.get("name")).trim(), shop_name: String(f.get("shop_name")).trim(),
       size_litres: Number(f.get("size_litres")), price: Number(f.get("price")), pincodes: String(f.get("pincodes")).trim(),
     };
     setBusy(true); setError("");
@@ -126,7 +126,8 @@ function ListingForm({ initial, onSaved, onCancel }: { initial: L | null; onSave
   return (
     <form onSubmit={submit} className="card grid gap-3 p-5 sm:grid-cols-2">
       <h2 className="text-xl font-bold sm:col-span-2">{initial ? "Edit product" : "List a product"}</h2>
-      <div><label htmlFor="pl-name" className="small text-muted">Shop name</label><input id="pl-name" name="name" required minLength={2} defaultValue={initial?.name} placeholder="e.g. Rajput Water" className="field mt-1" /></div>
+      <div><label htmlFor="pl-name" className="small text-muted">Product name (customers see this)</label><input id="pl-name" name="name" required minLength={2} maxLength={100} defaultValue={initial?.name} placeholder="e.g. 20L Mineral Water Jar" className="field mt-1" /></div>
+      <div><label htmlFor="pl-shop" className="small text-muted">Shop name (only you and WaterMart see this)</label><input id="pl-shop" name="shop_name" required minLength={2} maxLength={100} defaultValue={initial?.shop_name ?? ""} placeholder="e.g. Rajput Water" className="field mt-1" /></div>
       <div><label htmlFor="pl-size" className="small text-muted">Jar size (litres)</label><input id="pl-size" name="size_litres" type="number" min={1} max={50} required defaultValue={initial?.size_litres ?? 20} className="field mt-1" /></div>
       <div><label htmlFor="pl-price" className="small text-muted">Your price per jar (₹)</label><input id="pl-price" name="price" type="number" min={1} max={5000} required defaultValue={initial?.price} placeholder="58" className="field mt-1" /></div>
       <div className="sm:col-span-2"><label htmlFor="pl-pins" className="small text-muted">Pincodes you deliver to (comma separated, blank = all WaterMart areas)</label><input id="pl-pins" name="pincodes" defaultValue={initial?.pincodes.join(", ")} placeholder="400053, 400058" className="field mt-1" /></div>

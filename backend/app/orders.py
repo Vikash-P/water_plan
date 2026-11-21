@@ -115,7 +115,7 @@ def place_order(order: OrderIn) -> dict:
             raise HTTPException(422, "This product is no longer available. Please pick another.")
         pins = [x for x in listing["pincodes"].split(",") if x]
         if pins and order.pincode not in pins:
-            raise HTTPException(422, f"{listing['business_name']} doesn't deliver to {order.pincode}. Pick another product.")
+            raise HTTPException(422, f"This product doesn't deliver to {order.pincode}. Pick another product.")
         product = {"id": f"listing:{listing['id']}", "name": listing["name"], "price": listing["price"]}
     else:
         product = next((p for p in catalog.PRODUCTS if p["id"] == order.product_id), None)

@@ -4,7 +4,7 @@ import { pricingLayout } from "@/lib/three-d/layout.ts";
 
 export type Item = {
   key: string; pick: string; name: string; seller: string; price: number; perJar: number; note: string;
-  kind: "pass" | "jar"; partner: boolean; partnerName?: string; pincodes: string[]; badge?: string;
+  kind: "pass" | "jar"; partner: boolean; pincodes: string[]; badge?: string;
   /** Refundable deposit per jar, shown on the card. */
   deposit?: number;
 };
@@ -71,7 +71,7 @@ export default function Browse({ items }: { items: Item[] }) {
                   ? <span className="self-start rounded-full bg-[#FFE2C2] px-3 py-1.5 text-[13px] font-semibold text-[#7A3A00]">Most popular</span>
                   : i.badge && i.badge !== "Most popular" && <span className="self-start rounded-full border border-[#4A77A6] px-3 py-1 text-[13px] font-semibold text-[#C9D6E3]">{i.badge}</span>}
                 <h3 className={`m-0 text-sm font-semibold uppercase tracking-[0.08em] ${hero ? "text-[#1D3A57]" : "text-[#9FC4EC]"}`}>{i.name}</h3>
-                {i.partnerName && <span className={`-mt-2 text-sm ${hero ? "text-[#3A4F64]" : "text-[#C9D6E3]"}`}>by {i.partnerName}</span>}
+                {i.partner && <span className={`-mt-2 text-sm ${hero ? "text-[#3A4F64]" : "text-[#C9D6E3]"}`}>Verified partner</span>}
                 <span className="display-font text-5xl font-bold">₹{i.price}</span>
                 <span className={hero ? "text-[#3A4F64]" : "text-[#C9D6E3]"}>{i.kind === "pass" ? `₹${i.perJar} per jar · ${i.note}` : `${i.note} · about 2 hours`}</span>
                 {i.deposit != null && <span className={`text-sm ${hero ? "text-[#3A4F64]" : "text-[#C9D6E3]"}`}>+ ₹{i.deposit} refundable deposit{i.kind === "pass" ? " per jar" : ""}</span>}

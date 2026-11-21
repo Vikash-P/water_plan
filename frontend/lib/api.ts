@@ -31,7 +31,7 @@ const FALLBACK: Catalog = {
   ],
 };
 
-export type Listing = { id: number; name: string; size_litres: number; price: number; pincodes: string[]; partner: string; deposit_per_jar: number };
+export type Listing = { id: number; name: string; size_litres: number; price: number; pincodes: string[]; deposit_per_jar: number };
 
 // A slow or cold API must never hold the page open: give up after this and show the fallback instead.
 const TIMEOUT_MS = 2500;

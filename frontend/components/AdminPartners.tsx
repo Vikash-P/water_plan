@@ -5,7 +5,7 @@ import { errorMessage } from "@/lib/orders";
 type Lead = { id: number; name: string; phone: string; business_name: string | null; pincode: string | null; deposit: number | null; notes: string | null };
 type Creds = { partner_id: string; name: string };
 type Partner = { id: number; phone: string; business_name: string; contact_name: string; deposit_per_jar: number; status: string; password_set: boolean };
-type Listing = { id: number; name: string; size_litres: number; price: number; pincodes: string[]; status: string; partner: string };
+type Listing = { id: number; name: string; size_litres: number; price: number; pincodes: string[]; status: string; partner: string; shop_name: string | null };
 
 export default function AdminPartners({ onExpired }: { onExpired: () => void }) {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -73,7 +73,7 @@ export default function AdminPartners({ onExpired }: { onExpired: () => void }) 
         <div className="grid gap-3">
           {pending.map((l) => (
             <div key={l.id} className="card flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
-              <div><p className="font-semibold">{l.name} · {l.size_litres}L · ₹{l.price}/jar</p><p className="text-muted">{l.partner} · {l.pincodes.join(", ") || "all areas"}</p></div>
+              <div><p className="font-semibold">{l.name} · {l.size_litres}L · ₹{l.price}/jar</p><p className="text-muted">{l.partner}{l.shop_name ? ` (${l.shop_name})` : ""} · {l.pincodes.join(", ") || "all areas"}</p></div>
               <div className="flex gap-2"><button onClick={() => review(l, "approved")} className="btn btn-primary !px-4 !py-1.5">Approve</button><button onClick={() => review(l, "rejected")} className="btn border border-line !px-4 !py-1.5">Reject</button></div>
             </div>
           ))}
@@ -108,7 +108,7 @@ export default function AdminPartners({ onExpired }: { onExpired: () => void }) 
         <div className="grid gap-2 text-sm">
           {listings.map((l) => (
             <div key={l.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-line py-2">
-              <span>{l.partner} · {l.name} · ₹{l.price}</span>
+              <span>{l.partner}{l.shop_name ? ` (${l.shop_name})` : ""} · {l.name} · ₹{l.price}</span>
               <span className="flex items-center gap-2"><span className="chip">{l.status}</span>{l.status === "approved" && <button onClick={() => review(l, "rejected")} className="underline">Take down</button>}</span>
             </div>
           ))}
