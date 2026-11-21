@@ -3,9 +3,12 @@ import { useState } from "react";
 
 type Kind = "waitlist" | "b2b" | "partner";
 
-export default function LeadForm({ kind, cta, showBusiness = false, showVolume = false, showDeposit = false, notesLabel }: {
+export default function LeadForm({ kind, cta, showBusiness = false, showVolume = false, showDeposit = false, notesLabel, variant = "default" }: {
   kind: Kind; cta: string; showBusiness?: boolean; showVolume?: boolean; showDeposit?: boolean; notesLabel?: string;
+  /** "banner": white fields and a white raised button, for the blue waitlist banner. */
+  variant?: "default" | "banner";
 }) {
+  const banner = variant === "banner";
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState("");
 
@@ -33,12 +36,12 @@ export default function LeadForm({ kind, cta, showBusiness = false, showVolume =
   }
 
   if (state === "done") {
-    return <p className="card p-5 text-brand-dark" role="status">Thank you! We'll reach out on WhatsApp shortly.</p>;
+    return <p className={banner ? "rounded-2xl bg-white p-5 font-semibold text-brand-dark" : "card p-5 text-brand-dark"} role="status">Thank you! We&apos;ll reach out on WhatsApp shortly.</p>;
   }
 
-  const input = "field";
+  const input = banner ? "field !border-0 !rounded-[14px] !p-4 text-base" : "field";
   return (
-    <form onSubmit={submit} className="grid gap-3">
+    <form onSubmit={submit} className={banner ? "grid gap-2.5 sm:grid-cols-2" : "grid gap-3"}>
       <input name="name" required minLength={2} placeholder="Your name" className={input} />
       {showBusiness && <input name="business_name" placeholder="Business / plant name" className={input} />}
       <input name="phone" required inputMode="tel" placeholder="WhatsApp number (10 digits)" className={input} />
@@ -51,10 +54,13 @@ export default function LeadForm({ kind, cta, showBusiness = false, showVolume =
         </label>
       )}
       {notesLabel && <textarea name="notes" rows={3} placeholder={notesLabel} className={input} />}
-      <button disabled={state === "sending"} className="btn btn-primary">
+      <button
+        disabled={state === "sending"}
+        className={banner ? "btn wm-press bg-white !rounded-[14px] !py-4 text-[#0047B3] shadow-[0_4px_0_#A9C6F0] sm:col-span-2" : "btn btn-primary"}
+      >
         {state === "sending" ? "Sending…" : cta}
       </button>
-      {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
+      {error && <p className={banner ? "text-sm font-semibold text-white sm:col-span-2" : "text-sm text-red-700"} role="alert">{error}</p>}
     </form>
   );
 }

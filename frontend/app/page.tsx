@@ -3,21 +3,24 @@ import { connection } from "next/server";
 import PincodeChecker from "@/components/PincodeChecker";
 import OrderForm from "@/components/OrderForm";
 import HeroScene from "@/components/three-d/HeroScene";
+import IsoAreasMap from "@/components/three-d/IsoAreasMap";
+import { zoneBlocks } from "@/lib/three-d/layout.ts";
 import LeadForm from "@/components/LeadForm";
 import Browse, { type Item } from "@/components/Browse";
 import { getCatalog, getListings } from "@/lib/api";
 
 const steps = [
-  { t: "Pick a pass", d: "Pay once by UPI for 10 or 20 jars. Pay a refundable ₹350 deposit per jar we place with you." },
-  { t: "Tap 'Refill'", d: "Message us on WhatsApp or tap one button. One credit is used. No cash, no calls." },
-  { t: "Delivered in ~2 hours", d: "A verified rider brings a sealed ISI jar and collects the empty. Share a 4-digit OTP to confirm." },
+  { t: "Pick a pass", d: "Pay once by UPI for 10 or 20 jars, plus a refundable deposit per jar placed with you." },
+  { t: "Tap Refill", d: "One button in the app or a WhatsApp message. One credit is used. No cash, no calls." },
+  { t: "Swap at the door", d: "A verified rider brings a sealed jar, takes the empty, and you share a 4-digit OTP." },
 ];
 
+const ICON = { width: 32, height: 32, viewBox: "0 0 24 24", fill: "none", stroke: "#0057D9", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
 const trust = [
-  ["ISI/BIS-certified", "Every partner plant is verified, with licence numbers checked."],
-  ["Sealed jars", "Tamper-proof neck tags with a QR code on each jar."],
-  ["Prepaid, no cash", "No haggling, no extra charges at the door."],
-  ["Private", "Your phone number is never shared with delivery staff."],
+  { t: "ISI/BIS-certified", d: "Licence numbers checked for every partner plant.", icon: <svg {...ICON}><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" /><path d="m9 12 2 2 4-4" /></svg> },
+  { t: "Tamper-proof seal", d: "Neck tag with a QR code you can scan at the door.", icon: <svg {...ICON}><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg> },
+  { t: "Prepaid, no cash", d: "No haggling and no extra charges at the door.", icon: <svg {...ICON}><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18" /></svg> },
+  { t: "Number stays private", d: "Riders never see your phone number.", icon: <svg {...ICON}><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><path d="M4 4l16 16" /></svg> },
 ];
 
 // Only the parts that need API data wait for it; everything else is in the instant static shell.
@@ -63,56 +66,56 @@ export default function Home() {
         </Suspense>
       </section>
 
-      <section id="order" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-12">
-        <div className="mb-8 flex items-center gap-5">
-          <div>
-            <h2 className="title mb-2">Order 20L water jars</h2>
-            <p className="lead">Tell us what and where. We confirm on WhatsApp and deliver in about 2 hours.</p>
-            <p className="mt-2 inline-block rounded-full bg-brand-soft px-3 py-1 text-sm font-semibold text-brand">No signup needed. Order as a guest.</p>
-          </div>
-        </div>
+      <section id="order" className="mx-auto max-w-[1240px] scroll-mt-20 px-6 py-12">
+        <h2 className="title m-0 mb-2">Order 20L water jars</h2>
+        <p className="lead m-0 mb-8">Tell us what and where. We confirm on WhatsApp and deliver in about 2 hours. No signup needed.</p>
         <Suspense fallback={<Skeleton className="h-[36rem]" />}>
           <Order />
         </Suspense>
       </section>
 
-      <section id="how" className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="title">How it works</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
+      <section id="how" className="mx-auto max-w-[1240px] scroll-mt-20 px-6 py-16">
+        <h2 className="title m-0 mb-2">Three taps to a full jar</h2>
+        <p className="lead m-0 mb-10">Each step is a raised tile, so the order of things reads at a glance.</p>
+        <div className="grid gap-8 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
           {steps.map((s, i) => (
-            <div key={s.t} className="card p-6">
-              <div className="num-badge">{i + 1}</div>
-              <h3 className="font-semibold">{s.t}</h3>
-              <p className="mt-2 text-sm text-muted">{s.d}</p>
+            <div key={s.t} className="wm-lift flex flex-col gap-3.5 rounded-3xl bg-white p-7" style={{ boxShadow: "8px 8px 0 #D3E1EE, 16px 16px 0 #BCD0E4" }}>
+              <span aria-hidden="true" className="display-font text-[72px] font-bold leading-none text-brand" style={{ textShadow: "2px 2px 0 #9CC2F5, 4px 4px 0 #C9DCF7" }}>{i + 1}</span>
+              <h3 className="m-0 text-[22px] font-bold"><span className="sr-only">Step {i + 1}: </span>{s.t}</h3>
+              <p className="m-0 leading-relaxed text-[#3A4F64]">{s.d}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="title">Clean water you can verify</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-4">
-          {trust.map(([t, d]) => (
-            <div key={t}><h3 className="font-semibold">{t}</h3><p className="mt-1 text-sm text-muted">{d}</p></div>
+      <section className="mx-auto max-w-[1240px] px-6 py-16">
+        <h2 className="title m-0 mb-8">Water you can check yourself</h2>
+        <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+          {trust.map((c) => (
+            <div key={c.t} className="wm-raised flex flex-col gap-2.5 p-6">
+              {c.icon}
+              <h3 className="m-0 text-[19px] font-bold">{c.t}</h3>
+              <p className="m-0 leading-normal text-[#3A4F64]">{c.d}</p>
+            </div>
           ))}
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="title">Where we deliver</h2>
-          <Suspense fallback={<Skeleton className="mt-8 h-32" />}>
-            <Zones />
-          </Suspense>
-        </div>
-      </section>
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="card mx-auto max-w-xl p-6 shadow-sm">
-          <h2 className="text-xl font-extrabold">Get your first jar free</h2>
-          <Suspense fallback={<p className="mb-4 text-sm text-muted">You only pay the refundable jar deposit.</p>}>
-            <DepositNote />
-          </Suspense>
-          <LeadForm kind="waitlist" cta="Join waitlist" />
+      <Suspense fallback={<Skeleton className="mx-auto my-10 h-80 max-w-[1240px]" />}>
+        <Areas />
+      </Suspense>
+
+      <section id="notify" className="mx-auto mb-20 max-w-[1240px] scroll-mt-20 px-6">
+        <div className="flex flex-wrap items-center gap-8 rounded-[32px] bg-brand p-8 text-white sm:p-12" style={{ boxShadow: "0 10px 0 #003C99, 0 30px 60px rgba(0,87,217,0.3)" }}>
+          <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-3">
+            <h2 className="m-0 text-[40px] font-bold leading-tight">Your first jar is free</h2>
+            <Suspense fallback={<p className="m-0 text-[17px] text-[#E3EEFF]">You only pay the refundable jar deposit.</p>}>
+              <DepositNote />
+            </Suspense>
+          </div>
+          <div className="min-w-0 flex-[1_1_320px]">
+            <LeadForm kind="waitlist" cta="Join waitlist" variant="banner" />
+          </div>
         </div>
       </section>
     </>
@@ -155,24 +158,33 @@ async function Order() {
   return <OrderForm catalog={catalog} listings={listings} />;
 }
 
-async function Zones() {
+/** "Where we deliver": zone list plus the isometric block map. Hidden when there are no zones. */
+async function Areas() {
   const [catalog] = await loadData();
+  if (catalog.zones.length === 0) return null;
+  const zones = [...catalog.zones].sort((a, b) => Number(b.status === "launching") - Number(a.status === "launching"));
   return (
-    <div className="mt-8 grid gap-4 md:grid-cols-4">
-      {catalog.zones.map((z) => (
-        <div key={z.id} className="card p-5">
-          <h3 className="font-semibold">{z.name}</h3>
-          <p className="text-sm text-muted">{z.areas.join(", ")}</p>
-          <span className={`mt-3 inline-block rounded-full px-3 py-1 text-xs font-medium ${z.status === "launching" ? "bg-green-500/15 text-green-700" : "bg-amber-500/15 text-amber-700"}`}>
-            {z.status === "launching" ? "Launching now" : "Coming soon"}
-          </span>
-        </div>
-      ))}
-    </div>
+    <section id="areas" className="mx-auto flex max-w-[1240px] scroll-mt-20 flex-wrap items-center gap-12 px-6 pb-20 pt-10">
+      <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-4">
+        <h2 className="title m-0">Where we deliver</h2>
+        <p className="lead m-0">Raised blocks are live. Flat ones are coming soon, so you can join the list for your area.</p>
+        <ul className="m-0 mt-2 flex list-none flex-col gap-2.5 p-0">
+          {zones.map((z) => (
+            <li key={z.id} className="flex items-center justify-between gap-3 rounded-[14px] border border-line bg-white px-[18px] py-3.5">
+              <span><span className="font-semibold">{z.name}</span>{z.areas.length > 0 && <span className="text-muted"> · {z.areas.join(", ")}</span>}</span>
+              {z.status === "launching"
+                ? <span className="shrink-0 rounded-full bg-[#DDF5E6] px-2.5 py-1 text-[13px] font-semibold text-[#0B6A32]">Live</span>
+                : <a href="#notify" className="shrink-0 text-sm font-semibold text-brand">Notify me</a>}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <IsoAreasMap blocks={zoneBlocks(catalog.zones)} />
+    </section>
   );
 }
 
 async function DepositNote() {
   const [catalog] = await loadData();
-  return <p className="mb-4 text-sm text-muted">You only pay the ₹{catalog.deposit_per_jar} refundable deposit.</p>;
+  return <p className="m-0 text-[17px] text-[#E3EEFF]">You only pay the ₹{catalog.deposit_per_jar} refundable jar deposit.</p>;
 }
