@@ -2,11 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { pricingLayout, zoneBlocks, jarFill } from "./layout.ts";
 
-test("pricing: empty", () => assert.deepEqual(pricingLayout([]), { featured: null, tilted: false }));
-test("pricing: one", () => assert.deepEqual(pricingLayout(["jar"]), { featured: 0, tilted: false }));
-test("pricing: two prefers pass", () => assert.deepEqual(pricingLayout(["jar", "pass"]), { featured: 1, tilted: false }));
-test("pricing: three tilts middle", () => assert.deepEqual(pricingLayout(["jar", "pass", "pass"]), { featured: 1, tilted: true }));
-test("pricing: five no pass", () => assert.deepEqual(pricingLayout(["jar", "jar", "jar", "jar", "jar"]), { featured: 0, tilted: false }));
+test("pricing: empty", () => assert.deepEqual(pricingLayout([]), { featured: null, tilted: false, popular: false }));
+test("pricing: one", () => assert.deepEqual(pricingLayout(["jar"]), { featured: 0, tilted: false, popular: false }));
+test("pricing: two prefers pass", () => assert.deepEqual(pricingLayout(["jar", "pass"]), { featured: 1, tilted: false, popular: true }));
+test("pricing: three tilts middle", () => assert.deepEqual(pricingLayout(["jar", "pass", "pass"]), { featured: 1, tilted: true, popular: true }));
+test("pricing: five no pass", () => assert.deepEqual(pricingLayout(["jar", "jar", "jar", "jar", "jar"]), { featured: 0, tilted: false, popular: false }));
+test("pricing: three jars tilt but claim nothing", () => assert.deepEqual(pricingLayout(["jar", "jar", "jar"]), { featured: 1, tilted: true, popular: false }));
 
 test("zones: none", () => assert.deepEqual(zoneBlocks([]), []));
 test("zones: live first, max 4", () => assert.deepEqual(

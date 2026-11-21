@@ -59,6 +59,20 @@ export default function Home() {
         <HeroScene />
       </section>
 
+      <section id="how" className="mx-auto max-w-[1240px] scroll-mt-20 px-6 py-16">
+        <h2 className="title m-0 mb-2">Three taps to a full jar</h2>
+        <p className="lead m-0 mb-10">Each step is a raised tile, so the order of things reads at a glance.</p>
+        <div className="grid gap-8 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+          {steps.map((s, i) => (
+            <div key={s.t} className="wm-lift flex flex-col gap-3.5 rounded-3xl bg-white p-7" style={{ boxShadow: "8px 8px 0 #D3E1EE, 16px 16px 0 #BCD0E4" }}>
+              <span aria-hidden="true" className="display-font text-[72px] font-bold leading-none text-brand" style={{ textShadow: "2px 2px 0 #9CC2F5, 4px 4px 0 #C9DCF7" }}>{i + 1}</span>
+              <h3 className="m-0 text-[22px] font-bold"><span className="sr-only">Step {i + 1}: </span>{s.t}</h3>
+              <p className="m-0 leading-relaxed text-[#3A4F64]">{s.d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section id="pricing" className="scroll-mt-16 bg-night px-6 py-20 text-white">
         <div className="mx-auto max-w-[1240px]">
           <h2 className="title m-0 mb-2">Choose how you refill</h2>
@@ -75,20 +89,6 @@ export default function Home() {
         <Suspense fallback={<Skeleton className="h-[36rem]" />}>
           <Order />
         </Suspense>
-      </section>
-
-      <section id="how" className="mx-auto max-w-[1240px] scroll-mt-20 px-6 py-16">
-        <h2 className="title m-0 mb-2">Three taps to a full jar</h2>
-        <p className="lead m-0 mb-10">Each step is a raised tile, so the order of things reads at a glance.</p>
-        <div className="grid gap-8 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
-          {steps.map((s, i) => (
-            <div key={s.t} className="wm-lift flex flex-col gap-3.5 rounded-3xl bg-white p-7" style={{ boxShadow: "8px 8px 0 #D3E1EE, 16px 16px 0 #BCD0E4" }}>
-              <span aria-hidden="true" className="display-font text-[72px] font-bold leading-none text-brand" style={{ textShadow: "2px 2px 0 #9CC2F5, 4px 4px 0 #C9DCF7" }}>{i + 1}</span>
-              <h3 className="m-0 text-[22px] font-bold"><span className="sr-only">Step {i + 1}: </span>{s.t}</h3>
-              <p className="m-0 leading-relaxed text-[#3A4F64]">{s.d}</p>
-            </div>
-          ))}
-        </div>
       </section>
 
       <section className="mx-auto max-w-[1240px] px-6 py-16">

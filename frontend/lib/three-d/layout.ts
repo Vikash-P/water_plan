@@ -1,9 +1,13 @@
-/** Pricing cards: which card sits forward, and whether the side cards tilt (only for exactly three). */
-export function pricingLayout(kinds: ("pass" | "jar")[]): { featured: number | null; tilted: boolean } {
-  if (kinds.length === 0) return { featured: null, tilted: false };
-  if (kinds.length === 3) return { featured: 1, tilted: true };
+/**
+ * Pricing cards: which card sits forward, whether the side cards tilt (only for exactly three), and whether the
+ * forward card may wear the "Most popular" pill (only when it is a pass, so a single jar never claims it).
+ */
+export function pricingLayout(kinds: ("pass" | "jar")[]): { featured: number | null; tilted: boolean; popular: boolean } {
+  if (kinds.length === 0) return { featured: null, tilted: false, popular: false };
+  const tilted = kinds.length === 3;
   const pass = kinds.indexOf("pass");
-  return { featured: pass >= 0 ? pass : 0, tilted: false };
+  const featured = tilted ? 1 : pass >= 0 ? pass : 0;
+  return { featured, tilted, popular: kinds[featured] === "pass" };
 }
 
 /** Area map blocks: live zones first (original order kept within each group), at most four. */

@@ -30,7 +30,7 @@ export default function Browse({ items }: { items: Item[] }) {
     return [...out].sort((a, b) => a.perJar - b.perJar);
   }, [items, chip, pin]);
 
-  const { featured, tilted } = pricingLayout(shown.map((i) => i.kind));
+  const { featured, tilted, popular } = pricingLayout(shown.map((i) => i.kind));
   const pick = (i: Item) => window.dispatchEvent(new CustomEvent("jd-pick", { detail: i.pick }));
 
   return (
@@ -60,14 +60,14 @@ export default function Browse({ items }: { items: Item[] }) {
         <ul className="m-0 flex list-none flex-wrap items-center justify-center gap-7 p-0 [perspective:1400px]">
           {shown.map((i, idx) => {
             const hero = idx === featured;
-            const tilt = tilted && !hero ? (idx < (featured ?? 0) ? "md:[transform:rotateY(14deg)]" : "md:[transform:rotateY(-14deg)]") : "";
+            const tilt = tilted && !hero ? (idx < (featured ?? 0) ? "lg:[transform:rotateY(14deg)]" : "lg:[transform:rotateY(-14deg)]") : "";
             return (
               <li
                 key={i.key}
-                className={`flex flex-[1_1_280px] flex-col gap-3.5 ${hero ? "max-w-[360px] rounded-[28px] bg-white px-8 py-10 text-foreground md:-translate-y-3" : `max-w-[340px] rounded-3xl border border-[#24476B] bg-[#13304D] p-8 text-white ${tilt}`}`}
+                className={`flex flex-[1_1_280px] flex-col gap-3.5 ${hero ? "max-w-[360px] rounded-[28px] bg-white px-8 py-10 text-foreground lg:-translate-y-3" : `max-w-[340px] rounded-3xl border border-[#24476B] bg-[#13304D] p-8 text-white ${tilt}`}`}
                 style={hero ? { boxShadow: "0 8px 0 #0047B3, 0 30px 60px rgba(0,87,217,0.45)" } : { boxShadow: "0 18px 40px rgba(0,0,0,0.35)" }}
               >
-                {hero
+                {hero && popular
                   ? <span className="self-start rounded-full bg-[#FFE2C2] px-3 py-1.5 text-[13px] font-semibold text-[#7A3A00]">Most popular</span>
                   : i.badge && i.badge !== "Most popular" && <span className="self-start rounded-full border border-[#4A77A6] px-3 py-1 text-[13px] font-semibold text-[#C9D6E3]">{i.badge}</span>}
                 <h3 className={`m-0 text-sm font-semibold uppercase tracking-[0.08em] ${hero ? "text-[#1D3A57]" : "text-[#9FC4EC]"}`}>{i.name}</h3>
