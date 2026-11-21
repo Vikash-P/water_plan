@@ -115,7 +115,7 @@ export default function LivingJar({
     }
 
     const api: JarApi = {
-      kick: (a) => { s = { ...s, v: s.v + a }; },
+      kick: (a) => { if (!unsub) return; s = { ...s, v: Math.max(-0.08, Math.min(0.08, s.v + a)) }; },
       setTarget: (l) => { s = { ...s, target: l }; if (reduce) { s = { ...s, level: l }; draw(); } },
       setLevel: (l) => { s = { ...s, level: l, target: l }; draw(); },
       setCapped: (c) => svg.classList.toggle("uncapped", !c),
