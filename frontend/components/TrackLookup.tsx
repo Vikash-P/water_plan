@@ -46,7 +46,7 @@ export default function TrackLookup({ initialCode = "" }: { initialCode?: string
             <h2 className="font-mono text-lg font-semibold">{order.code}</h2>
             <span className="text-sm text-muted">{order.slot}</span>
           </div>
-          {riderProgress(order.status) !== null && <RiderMap status={order.status} />}
+          {riderProgress(order.status) !== null && <RiderMap code={order.code} status={order.status} />}
           {order.status === "cancelled" ? (
             <p className="mt-4 font-medium text-red-600">This order was cancelled.</p>
           ) : (

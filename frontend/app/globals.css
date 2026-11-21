@@ -176,3 +176,4 @@ small, .small { letter-spacing: 0.005em; }
 .rider-pulse { fill: var(--brand); opacity: 0.25; transform-box: fill-box; transform-origin: center; animation: rider-pulse 1.6s ease-out infinite; }
 @keyframes rider-pulse { 0% { transform: scale(0.6); opacity: 0.45; } 100% { transform: scale(1.8); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .rider-pulse { animation: none; } }
+.paused .rider-pulse { animation-play-state: paused; }

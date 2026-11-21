@@ -8,14 +8,14 @@ import { STATUS_LABEL } from "@/lib/orders";
 
 const D = "M50 170C170 175 150 50 300 70S440 190 545 60";
 const DURATION = 1.2;
+// remembered per order code: TrackLookup unmounts the map on every lookup
+const memory = new Map<string, { progress: number; arrived: boolean }>();
 
-export default function RiderMap({ status }: { status: string }) {
+export default function RiderMap({ code, status }: { code: string; status: string }) {
   const svg = useRef<SVGSVGElement>(null);
   const route = useRef<SVGPathElement>(null);
   const fg = useRef<SVGPathElement>(null);
   const rider = useRef<SVGGElement>(null);
-  const cur = useRef(0);
-  const arrived = useRef(false);
   const target = riderProgress(status);
 
   useEffect(() => {
@@ -28,17 +28,18 @@ export default function RiderMap({ status }: { status: string }) {
       g.setAttribute("transform", `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`);
       fgp.style.strokeDashoffset = String(len * (1 - p));
     };
+    const mem = memory.get(code) ?? { progress: 0, arrived: false };
+    memory.set(code, mem);
     const arrive = () => {
-      if (target < 1 || arrived.current) return;
-      arrived.current = true;
+      if (target < 1 || mem.arrived) return;
+      mem.arrived = true;
       const r = svg.current!.getBoundingClientRect();
       if (r.bottom > 0 && r.top < innerHeight) burst(r.left + r.width * 0.91, r.top + r.height * 0.2, 30);
     };
-    const from = cur.current;
+    const from = mem.progress;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches || from === target) {
-      cur.current = target; draw(target);
-      if (from === target) return;
-      arrived.current = target === 1; // no burst when motion is reduced
+      mem.progress = target; draw(target);
+      if (target === 1) mem.arrived = true; // no burst when motion is reduced
       return;
     }
     let el = 0;
@@ -47,12 +48,22 @@ export default function RiderMap({ status }: { status: string }) {
       el += dt;
       const k = Math.min(1, el / DURATION);
       const e = 1 - (1 - k) ** 3;
-      cur.current = from + (target - from) * e;
-      draw(cur.current);
-      if (k >= 1) { unsub(); cur.current = target; arrive(); }
+      mem.progress = from + (target - from) * e;
+      draw(mem.progress);
+      if (k >= 1) { unsub(); mem.progress = target; arrive(); }
     });
     return unsub;
-  }, [target]);
+  }, [code, target]);
+
+  useEffect(() => {
+    const el = svg.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      el.classList.toggle("paused", !e.isIntersecting);
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [target === null]);
 
   if (target === null) return null;
   return (
