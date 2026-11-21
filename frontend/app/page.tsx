@@ -111,8 +111,8 @@ export default function Home() {
       <section id="notify" className="mx-auto mb-20 max-w-[1240px] scroll-mt-20 px-6">
         <div className="flex flex-wrap items-center gap-8 rounded-[32px] bg-brand p-8 text-white sm:p-12" style={{ boxShadow: "0 10px 0 #003C99, 0 30px 60px rgba(0,87,217,0.3)" }}>
           <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-3">
-            <h2 className="m-0 text-[40px] font-bold leading-tight">Your first jar is free</h2>
-            <Suspense fallback={<p className="m-0 text-[17px] text-[#E3EEFF]">You only pay the refundable jar deposit.</p>}>
+            <h2 className="m-0 text-[40px] font-bold leading-tight">Every 11th jar is free*</h2>
+            <Suspense fallback={<p className="m-0 text-[17px] text-[#E3EEFF]">*Pay for 10 jars and the 11th is on us. Refundable jar deposit applies.</p>}>
               <DepositNote />
             </Suspense>
           </div>
@@ -186,5 +186,5 @@ async function Areas() {
 
 async function DepositNote() {
   const [catalog] = await loadData();
-  return <p className="m-0 text-[17px] text-[#E3EEFF]">You only pay the ₹{catalog.deposit_per_jar} refundable jar deposit.</p>;
+  return <p className="m-0 text-[17px] text-[#E3EEFF]">*Pay for 10 jars and the 11th is on us. Refundable jar deposit of ₹{catalog.deposit_per_jar} applies.</p>;
 }
