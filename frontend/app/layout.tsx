@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { Comfortaa, Manrope } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Ripple from "@/components/water/Ripple";
 import Splash from "@/components/water/Splash";
 
-const comfortaa = Comfortaa({ variable: "--font-comfortaa", subsets: ["latin"], weight: "700" });
-const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"] });
+const spaceGrotesk = Space_Grotesk({ variable: "--font-space-grotesk", subsets: ["latin"], weight: ["500", "600", "700"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
   title: "WaterMart — 20L drinking water at your door in Mumbai",
@@ -17,12 +16,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${manrope.variable} ${comfortaa.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
-        <Ripple />
         <Splash />
       </body>
     </html>

@@ -1,15 +1,22 @@
-/** WATERMART wordmark: rounded geometric capitals with a dark-to-sand gradient, as in the brand logo. */
-export default function Logo({ className = "h-6" }: { className?: string }) {
+/** WaterMart mark: raised blue badge with a white water drop, then the name in Space Grotesk. */
+export default function Logo({ small = false }: { small?: boolean }) {
+  const box = small ? 28 : 34;
   return (
-    <svg viewBox="0 0 330 40" className={className} role="img" aria-label="WaterMart" fill="none">
-      <defs>
-        <linearGradient id="wm-grad" x1="0" x2="1">
-          <stop offset="0" style={{ stopColor: "var(--logo-1)" }} />
-          <stop offset="0.55" style={{ stopColor: "var(--logo-2)" }} />
-          <stop offset="1" style={{ stopColor: "var(--logo-3)" }} />
-        </linearGradient>
-      </defs>
-      <text x="0" y="32" style={{ fontFamily: "var(--font-comfortaa), system-ui, sans-serif" }} fontWeight="700" fontSize="36" letterSpacing="3" fill="url(#wm-grad)">WATERMART</text>
-    </svg>
+    <span className="flex items-center gap-2.5 text-foreground">
+      <span
+        aria-hidden="true"
+        className="flex items-center justify-center"
+        style={{
+          width: box, height: box, borderRadius: small ? 8 : 10,
+          background: "linear-gradient(145deg, #2B86FF, #0047B3)",
+          boxShadow: "0 4px 0 #00327F, 0 8px 16px rgba(0,71,179,0.3)",
+        }}
+      >
+        <svg width={small ? 15 : 18} height={small ? 15 : 18} viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z" />
+        </svg>
+      </span>
+      <span className="display-font font-bold tracking-[0.02em]" style={{ fontSize: small ? 17 : 20 }}>WaterMart</span>
+    </span>
   );
 }

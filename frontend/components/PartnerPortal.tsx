@@ -10,9 +10,9 @@ type State = { kind: "loading" } | { kind: "out" } | { kind: "denied"; msg: stri
 
 const json = { "Content-Type": "application/json" };
 const STATUS: Record<string, { label: string; cls: string }> = {
-  pending: { label: "Waiting for review", cls: "bg-amber-500/15 text-amber-700 dark:text-amber-300" },
-  approved: { label: "Live on the site", cls: "bg-green-500/15 text-green-700 dark:text-green-300" },
-  rejected: { label: "Rejected", cls: "bg-red-500/15 text-red-700 dark:text-red-300" },
+  pending: { label: "Waiting for review", cls: "bg-amber-500/15 text-amber-700" },
+  approved: { label: "Live on the site", cls: "bg-green-500/15 text-green-700" },
+  rejected: { label: "Rejected", cls: "bg-red-500/15 text-red-700" },
 };
 
 export default function PartnerPortal() {
