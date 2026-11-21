@@ -151,3 +151,22 @@ small, .small { letter-spacing: 0.005em; }
 .stream .fc { fill: none; stroke: #5fb4f5; stroke-width: 16; stroke-linecap: round; }
 .stream .fs { fill: none; stroke: #fff; stroke-opacity: .8; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 14 30; animation: flowdash .6s linear infinite; }
 @keyframes flowdash { to { stroke-dashoffset: -44; } }
+
+/* Order placed: scooter ride */
+.road { position: relative; height: 110px; margin-top: 1.5rem; border-radius: 14px; background: var(--brand-soft); overflow: hidden; }
+.road::after { content: ""; position: absolute; left: 0; right: 0; bottom: 18px; height: 4px;
+  background: repeating-linear-gradient(90deg, var(--line) 0 28px, transparent 28px 52px); animation: lane 0.5s linear infinite; }
+@keyframes lane { to { background-position: -52px 0; } }
+.road p { position: absolute; right: 16px; top: 12px; font-weight: 700; color: var(--brand); }
+.scooter { position: absolute; bottom: 20px; left: -140px; width: 130px; z-index: 1; overflow: visible; animation: ride 3.8s cubic-bezier(0.55, 0, 0.5, 1) forwards; }
+@keyframes ride { 0% { left: -140px; } 35% { left: 38%; } 60% { left: 41%; } 100% { left: 105%; } }
+.scooter .bodyg { animation: jig 0.25s ease-in-out infinite alternate; }
+@keyframes jig { to { transform: translateY(-2px); } }
+.scooter .speed { stroke: var(--brand); stroke-width: 3; stroke-linecap: round; opacity: 0.5; }
+.spokes { transform-box: fill-box; transform-origin: center; animation: spin 0.4s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .road::after, .scooter .bodyg, .spokes { animation: none; }
+  .scooter { animation: none; left: 41%; }
+  .scooter .speed { display: none; }
+}

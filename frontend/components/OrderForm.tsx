@@ -1,6 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import LivingJar, { type JarApi } from "@/components/water/LivingJar";
+import Scooter from "@/components/water/Scooter";
+import { burst } from "@/components/water/Splash";
+import { orderFill } from "@/lib/water/orderFill.ts";
 import type { Catalog, Listing } from "@/lib/api";
 import { SLOTS, errorMessage, type Order } from "@/lib/orders";
 
@@ -30,6 +34,20 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
   const [vHint, setVHint] = useState("");
   const [vErr, setVErr] = useState("");
   const [vBusy, setVBusy] = useState(false);
+  // Living jar: fills as the form is completed.
+  const formRef = useRef<HTMLFormElement>(null);
+  const jarRef = useRef<JarApi | null>(null);
+  const doneRef = useRef(-1);
+  const [fillInfo, setFillInfo] = useState(() => orderFill({ product: true, name: "", phone: "", pincode: "", society: "", flat: "", slot: true }));
+  const onJar = useCallback((api: JarApi) => { jarRef.current = api; }, []);
+  const onPlacedJar = useCallback((api: JarApi) => {
+    // After the success scroll-to-top has settled: close the cap, hop and splash once.
+    requestAnimationFrame(() => {
+      api.setCapped(true); api.hop();
+      const r = api.el.getBoundingClientRect();
+      burst(r.left + r.width / 2, r.top + r.height * 0.45);
+    });
+  }, []);
 
   // "single" / "pass10" are WaterMart packs; "l:12" is a partner's listing (priced per jar by the partner).
   const listing = product.startsWith("l:") ? listings.find((l) => `l:${l.id}` === product) : undefined;
@@ -46,6 +64,21 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
     window.addEventListener("jd-pick", onPick);
     return () => window.removeEventListener("jd-pick", onPick);
   }, []);
+
+  const recompute = useCallback(() => {
+    const form = formRef.current;
+    if (!form) return;
+    const f = new FormData(form);
+    const v = (k: string) => String(f.get(k) ?? "");
+    const r = orderFill({ product: !!product, name: v("name"), phone: v("phone"), pincode: pin, society: v("society"), flat: v("flat"), slot: !!slot });
+    const prev = doneRef.current;
+    doneRef.current = r.done;
+    setFillInfo((o) => (o.done === r.done && o.missing === r.missing ? o : r));
+    jarRef.current?.setTarget(r.level);
+    if (prev >= 0 && r.done > prev) jarRef.current?.kick(0.07);
+  }, [product, pin, slot]);
+  // Autofill applies via defaultValue + remount, so read the form after render.
+  useEffect(() => { recompute(); }, [recompute, fillKey]);
 
   // Only fills in once the customer has typed their own number. A login left over in this browser is used
   // silently when the typed number matches it; any other number has to be verified with a code.
@@ -130,6 +163,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
   if (placed) {
     return (
       <div className="card mx-auto max-w-xl p-8" role="status">
+        <div className="mx-auto mb-4 w-20"><LivingJar level={1} capped={false} onReady={onPlacedJar} /></div>
         <p className="text-sm font-medium text-brand">Request received</p>
         <h1 className="title mt-1">Thank you, {placed.name.split(" ")[0]}!</h1>
         <p className="lead mt-3">We'll confirm on WhatsApp shortly and send a UPI link for the amount below. Nothing is charged until you pay that link.</p>
@@ -142,6 +176,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
           <dt className="text-muted">Refundable deposit</dt><dd>₹{placed.deposit}</dd>
           <dt className="font-semibold">Total to pay</dt><dd className="font-semibold">₹{placed.total_due}</dd>
         </dl>
+        <Scooter />
         <p className="mt-4 text-sm text-muted">Save your order code — you'll need it with your phone number to track this order.</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href={`/track?code=${placed.code}`} className="btn btn-primary">Track this order</Link>
@@ -152,7 +187,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-8 lg:grid-cols-[1fr_320px]">
+    <form ref={formRef} onSubmit={submit} onInput={recompute} className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div className="grid gap-8">
         <fieldset className="grid gap-3">
           <legend className="mb-1 font-semibold">1. What would you like?</legend>
@@ -259,6 +294,15 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
 
       <aside className="lg:sticky lg:top-20 lg:self-start">
         <div className="card p-6">
+          <div className="mb-4 flex flex-col items-center gap-2">
+            <div className="w-20"><LivingJar level={fillInfo.level} capped={false} onReady={onJar} /></div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-brand-soft" aria-hidden="true">
+              <div className="h-full rounded-full bg-brand transition-[width] duration-500" style={{ width: `${Math.round((fillInfo.done / fillInfo.total) * 100)}%` }} />
+            </div>
+            <p className="text-sm font-semibold" aria-live="polite">
+              {fillInfo.missing ? `${Math.round(fillInfo.level * 100)}% full · add ${fillInfo.missing}` : "Full! Ready to go"}
+            </p>
+          </div>
           <h2 className="font-semibold">Summary</h2>
           <dl className="mt-4 grid grid-cols-[1fr_auto] gap-y-2 text-sm">
             <dt className="text-muted">{p.name}{perJar ? ` × ${jars}` : ""}</dt><dd>₹{amount}</dd>
