@@ -39,7 +39,7 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
   const jarRef = useRef<JarApi | null>(null);
   const doneRef = useRef(-1);
   const [fillInfo, setFillInfo] = useState(() => orderFill({ product: true, name: "", phone: "", pincode: "", society: "", flat: "", slot: true }));
-  const onJar = useCallback((api: JarApi) => { jarRef.current = api; doneRef.current = -1; setFillInfo((o) => o); }, []);
+  const onJar = useCallback((api: JarApi) => { jarRef.current = api; doneRef.current = -1; }, []);
   const onPlacedJar = useCallback((api: JarApi) => {
     // After the success scroll-to-top has settled: close the cap, hop and splash once.
     requestAnimationFrame(() => {
