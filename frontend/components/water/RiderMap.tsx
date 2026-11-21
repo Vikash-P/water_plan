@@ -3,7 +3,6 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { riderProgress } from "@/lib/water/rider.ts";
 import { subscribe } from "@/lib/water/ticker.ts";
-import { burst } from "./Splash";
 import { STATUS_LABEL } from "@/lib/orders";
 
 const D = "M50 170C170 175 150 50 300 70S440 190 545 60";
@@ -33,8 +32,6 @@ export default function RiderMap({ code, status }: { code: string; status: strin
     const arrive = () => {
       if (target < 1 || mem.arrived) return;
       mem.arrived = true;
-      const r = svg.current!.getBoundingClientRect();
-      if (r.bottom > 0 && r.top < innerHeight) burst(r.left + r.width * 0.91, r.top + r.height * 0.2, 30);
     };
     const from = mem.progress;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches || from === target) {

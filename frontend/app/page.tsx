@@ -2,9 +2,7 @@ import { Suspense, cache } from "react";
 import { connection } from "next/server";
 import PincodeChecker from "@/components/PincodeChecker";
 import OrderForm from "@/components/OrderForm";
-import OrderHeadingJar from "@/components/water/OrderHeadingJar";
-import ScrollStream from "@/components/water/ScrollStream";
-import HeroJar from "@/components/water/HeroJar";
+import HeroScene from "@/components/three-d/HeroScene";
 import LeadForm from "@/components/LeadForm";
 import Browse, { type Item } from "@/components/Browse";
 import { getCatalog, getListings } from "@/lib/api";
@@ -38,19 +36,24 @@ function Skeleton({ className }: { className: string }) {
 export default function Home() {
   return (
     <>
-      <ScrollStream />
-      <section id="start" data-stream="source" className="bg-gradient-to-b from-brand-soft to-background">
-        <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
-          <div className="flex items-center gap-6">
-            <div className="min-w-0 flex-1">
-              <h1 className="display rise">20L water, delivered to your door in <span className="text-brand">2 hours</span>.</h1>
-              <p className="lead mt-3 max-w-xl">Pick a brand from verified Mumbai partners. Prepaid, ISI-certified, no signup needed.</p>
-              <div className="mt-6 max-w-lg"><PincodeChecker /></div>
-              <p className="mt-4 inline-block rounded-full bg-card px-3 py-1 text-sm font-semibold text-brand shadow-sm">No signup needed to order.</p>
-            </div>
-            <HeroJar />
+      <section id="top" className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-12 px-6 pb-14 pt-12 md:pt-[72px]">
+        <div className="flex min-w-0 flex-[1_1_440px] flex-col gap-6">
+          <Suspense fallback={null}>
+            <LiveBadge />
+          </Suspense>
+          <h1 className="display rise m-0">20L water at your door in about 2 hours.</h1>
+          <p className="lead m-0 max-w-[520px]">Sealed, ISI-certified jars from verified Mumbai plants. Pay once by UPI, refill with one tap, hand over with an OTP.</p>
+          <PincodeChecker />
+          <div className="flex flex-wrap gap-5 text-sm text-[#3A4F64]">
+            {["No signup needed", "Confirm on WhatsApp", "Deposit refunded on return"].map((t) => (
+              <span key={t} className="flex items-center gap-1.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0057D9" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+                {t}
+              </span>
+            ))}
           </div>
         </div>
+        <HeroScene />
       </section>
 
       <section id="pricing" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-10">
@@ -62,7 +65,6 @@ export default function Home() {
 
       <section id="order" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-12">
         <div className="mb-8 flex items-center gap-5">
-          <OrderHeadingJar />
           <div>
             <h2 className="title mb-2">Order 20L water jars</h2>
             <p className="lead">Tell us what and where. We confirm on WhatsApp and deliver in about 2 hours.</p>
@@ -76,7 +78,7 @@ export default function Home() {
 
       <section id="how" className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="title">How it works</h2>
-        <div data-stream="end" className="mt-8 grid gap-6 md:grid-cols-3">
+        <div className="mt-8 grid gap-6 md:grid-cols-3">
           {steps.map((s, i) => (
             <div key={s.t} className="card p-6">
               <div className="num-badge">{i + 1}</div>
@@ -133,6 +135,18 @@ async function Pricing() {
       <p className="mb-6 text-muted">Jar deposit of ₹{catalog.deposit_per_jar} is fully refundable when you return the jar. Passes are always cheaper per jar.</p>
       <Browse items={partnerItems.length > 0 ? partnerItems : own} />
     </>
+  );
+}
+
+/** "Now delivering in …" from the first live zone; hidden when no zone is live. */
+async function LiveBadge() {
+  const [catalog] = await loadData();
+  const live = catalog.zones.find((z) => z.status === "launching");
+  if (!live) return null;
+  return (
+    <span className="inline-flex items-center gap-2 self-start rounded-full border border-[#D3E1EE] bg-white px-3.5 py-[7px] text-sm font-medium text-[#1D3A57]">
+      <span aria-hidden="true" className="h-2 w-2 rounded-full bg-[#12A150]" />Now delivering in {live.name}
+    </span>
   );
 }
 

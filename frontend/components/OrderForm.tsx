@@ -3,7 +3,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import LivingJar, { type JarApi } from "@/components/water/LivingJar";
 import Scooter from "@/components/water/Scooter";
-import { burst } from "@/components/water/Splash";
 import { orderFill } from "@/lib/water/orderFill.ts";
 import type { Catalog, Listing } from "@/lib/api";
 import { SLOTS, errorMessage, type Order } from "@/lib/orders";
@@ -46,8 +45,6 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
     placedRef.current?.scrollIntoView({ block: "start" });
     requestAnimationFrame(() => {
       api.setCapped(true); api.hop();
-      const r = api.el.getBoundingClientRect();
-      burst(r.left + r.width / 2, r.top + r.height * 0.45);
     });
   }, []);
 
