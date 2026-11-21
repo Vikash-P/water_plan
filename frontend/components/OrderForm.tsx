@@ -131,6 +131,18 @@ export default function OrderForm({ catalog, listings = [] }: { catalog: Catalog
     }
   }
 
+  // Only partner products can be ordered; until one is approved there is nothing to order.
+  if (listings.length === 0 && !placed) {
+    return (
+      <div className="mx-auto flex max-w-xl flex-col items-center gap-3 rounded-3xl bg-white p-8 text-center" style={{ boxShadow: "0 6px 0 #D3E1EE, 0 18px 30px rgba(11,31,51,0.08)" }} role="status">
+        <CssJar size="sm" level="20%" float={false} />
+        <h3 className="m-0 text-xl font-bold">No products available in your area yet</h3>
+        <p className="m-0 text-[#3A4F64]">We&apos;re adding verified water partners. Join the waitlist and we&apos;ll tell you on WhatsApp when you can order.</p>
+        <Link href="/#notify" className="btn btn-primary wm-press mt-2 no-underline">Join the waitlist</Link>
+      </div>
+    );
+  }
+
   if (placed) {
     return (
       <div ref={placedRef} className="mx-auto flex max-w-xl scroll-mt-24 flex-col gap-1 rounded-3xl bg-white p-8" style={{ boxShadow: "0 6px 0 #D3E1EE, 0 18px 30px rgba(11,31,51,0.08)" }} role="status">
