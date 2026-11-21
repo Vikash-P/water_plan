@@ -5,11 +5,19 @@ let raf = 0;
 let last = 0;
 
 function frame(now: number) {
+  raf = 0; // this request is consumed; at most one is ever outstanding
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   const t = now / 1000;
-  for (const fn of Array.from(subs)) fn(t, dt);
-  raf = subs.size ? requestAnimationFrame(frame) : 0;
+  for (const fn of Array.from(subs)) {
+    if (!subs.has(fn)) continue; // unsubscribed earlier this frame
+    try {
+      fn(t, dt);
+    } catch (e) {
+      queueMicrotask(() => { throw e; }); // surface the error without killing the loop
+    }
+  }
+  if (subs.size && !raf) raf = requestAnimationFrame(frame);
 }
 
 /** Shared rAF loop: starts on the first subscriber, stops when the last leaves. Browser-only. */
