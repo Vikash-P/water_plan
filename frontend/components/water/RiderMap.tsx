@@ -55,6 +55,7 @@ export default function RiderMap({ code, status }: { code: string; status: strin
     return unsub;
   }, [code, target]);
 
+  const hidden = target === null;
   useEffect(() => {
     const el = svg.current;
     if (!el) return;
@@ -63,7 +64,7 @@ export default function RiderMap({ code, status }: { code: string; status: strin
     });
     io.observe(el);
     return () => io.disconnect();
-  }, [target === null]);
+  }, [hidden]);
 
   if (target === null) return null;
   return (
