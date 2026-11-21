@@ -116,3 +116,27 @@ small, .small { letter-spacing: 0.005em; }
 @media (prefers-contrast: more) {
   :root { --line: #5a7384; --muted: #2d4552; }
 }
+
+/* Living jar */
+.jar-stage { position: relative; perspective: 900px; touch-action: pan-y; }
+.jar-stage-tilt { padding: 0 12%; }
+.jar-tilt { position: relative; transform-style: preserve-3d; will-change: transform; }
+.jar-holder { transform: translateZ(30px); }
+.jar-holder.float { animation: jar-float 4.2s ease-in-out infinite; }
+@keyframes jar-float { 50% { translate: 0 -14px; } }
+.jar-holder .jar-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.jar-holder .jar-svg { filter: drop-shadow(0 18px 24px rgba(16, 70, 140, 0.22)); }
+.hop .jar-svg { animation: jar-hop 0.9s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes jar-hop { 0% { transform: scale(1, 1); } 15% { transform: scale(1.08, 0.9) translateY(8px); } 45% { transform: scale(0.94, 1.08) translateY(-46px); } 75% { transform: scale(1.04, 0.96); } 100% { transform: none; } }
+.jar-svg .cap { transition: transform 0.55s cubic-bezier(0.3, 1.5, 0.5, 1), opacity 0.3s; }
+.jar-svg.uncapped .cap { transform: translateY(-70px); opacity: 0; }
+.dropw { position: absolute; transform: translateZ(var(--z)); }
+.drop { display: block; width: var(--s); height: var(--s); border-radius: 0 50% 50% 50%; rotate: 45deg;
+  background: radial-gradient(circle at 62% 62%, rgba(255, 255, 255, 0.85) 0 14%, transparent 30%), linear-gradient(135deg, #8fd0ff, #2a7fdc);
+  box-shadow: 0 6px 14px -6px rgba(20, 90, 180, 0.6); animation: drop-bob 3.4s ease-in-out infinite alternate; }
+@keyframes drop-bob { to { translate: 0 -16px; } }
+.jar-shadow { position: absolute; bottom: -10px; left: 50%; width: 85%; height: 20px; translate: -50% 0; background: radial-gradient(closest-side, rgba(11, 37, 64, 0.28), transparent); animation: jar-shad 4.2s ease-in-out infinite; }
+@keyframes jar-shad { 50% { scale: 0.82; opacity: 0.7; } }
+@media (prefers-reduced-motion: reduce) {
+  .jar-holder.float, .drop, .jar-shadow, .hop .jar-svg { animation: none; }
+}
