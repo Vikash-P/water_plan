@@ -72,15 +72,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="pricing" className="scroll-mt-16 bg-night px-6 py-20 text-white">
-        <div className="mx-auto max-w-[1240px]">
-          <h2 className="title m-0 mb-2">Choose how you refill</h2>
-          <p className="m-0 mb-10 text-lg text-[#C9D6E3]">The pass most homes pick sits forward. Deposit shown separately on every card.</p>
-          <Suspense fallback={<div aria-hidden="true" className="h-96 animate-pulse rounded-3xl bg-[#13304D] motion-reduce:animate-none" />}>
-            <Pricing />
-          </Suspense>
-        </div>
-      </section>
+      <Suspense fallback={<div aria-hidden="true" className="h-[32rem] animate-pulse bg-night motion-reduce:animate-none" />}>
+        <Pricing />
+      </Suspense>
 
       <section id="order" className="mx-auto max-w-[1240px] scroll-mt-20 px-6 py-12">
         <h2 className="title m-0 mb-2">Order 20L water jars</h2>
@@ -124,20 +118,24 @@ export default function Home() {
   );
 }
 
+/** Partner products only. With no live partner product the whole pricing section is left out. */
 async function Pricing() {
   const [catalog, listings] = await loadData();
-  // Once any partner is listed, show only partner products; WaterMart's own packs are the fallback so the page is never empty.
-  const own: Item[] = catalog.products.map((p): Item => ({
-    key: `jd-${p.id}`, pick: p.id, name: p.name, seller: "WaterMart", price: p.price, perJar: p.per_jar, kind: p.jars > 1 ? "pass" : "jar",
-    partner: false, pincodes: [], badge: p.tagline, note: p.validity_days ? `Valid ${p.validity_days} days` : `${p.jars} jar`,
-    deposit: catalog.deposit_per_jar,
-  }));
-  const partnerItems: Item[] = listings.map((l): Item => ({
+  if (listings.length === 0) return null;
+  const items: Item[] = listings.map((l): Item => ({
     key: `l-${l.id}`, pick: `l:${l.id}`, name: l.name, seller: "Verified partner", price: l.price, perJar: l.price,
     kind: "jar", partner: true, pincodes: l.pincodes, note: `${l.size_litres}L jar`,
     deposit: l.deposit_per_jar ?? catalog.deposit_per_jar,
   }));
-  return <Browse items={partnerItems.length > 0 ? partnerItems : own} />;
+  return (
+    <section id="pricing" className="scroll-mt-16 bg-night px-6 py-20 text-white">
+      <div className="mx-auto max-w-[1240px]">
+        <h2 className="title m-0 mb-2">Choose how you refill</h2>
+        <p className="m-0 mb-10 text-lg text-[#C9D6E3]">Water from verified partners. Deposit shown separately on every card.</p>
+        <Browse items={items} />
+      </div>
+    </section>
+  );
 }
 
 /** "Now delivering in …" from the first live zone; hidden when no zone is live. */
